@@ -2,6 +2,8 @@ Spokes is a framework inspired by Django for python.
 
 homepage: https://github.com/billysometimes/spokes
 
+poorly formatted wiki at: https://github.com/billysometimes/spokes/wiki
+
 This is pre-alpha software and bugs and security holes will certainly be found.
 
 Pull requests are VERY welcome.  If you are looking for a project to help out with,
