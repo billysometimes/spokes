@@ -1,5 +1,8 @@
 name: spokes
-description: A sample command-line application
+version: 0.1.0
+author: Billy Welch <billywelch@gmail.com>
+description: A Django-inspired framework
+homepage: https://github.com/billysometimes/spokes
+documentation: https://github.com/billysometimes/spokes/wiki
 dependencies:
-  args: any
-  lug: any
+  args: '>=0.10.0+1 <0.11.0'

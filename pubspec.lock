@@ -9,7 +9,3 @@ packages:
     description: collection
     source: hosted
     version: "0.9.1"
-  lug:
-    description: lug
-    source: hosted
-    version: "0.1.2"

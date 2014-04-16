@@ -1,4 +1,4 @@
-Spokes is a framework inspired by Django for python.
+Spokes is a dart web framework inspired by Django for python.
 
 homepage: https://github.com/billysometimes/spokes
 
@@ -21,3 +21,19 @@ this project has many things that could use your help from:
 
 -writing documentation 
 
+-testing windows support
+
+
+
+
+Project Goals:
+
+- spokes should never require anything other than the dart runtime.
+  Grunt.js and SASS are cool, and optional middlewares for spokes would be
+  super cool, but no external tools shall ever be *required* for spokes.
+ 
+- spokes should be light weight.  It is easier for developers to manually
+  add custom packages than it is for them to remove deeply integrated fluff.
+  
+- Always march forward.  Backwards compatibility is not an issue, spokes will
+  always strive to be compatible will the latest stable version of dart. 
