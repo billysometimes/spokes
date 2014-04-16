@@ -1,0 +1,5 @@
+name: spokes
+description: A sample command-line application
+dependencies:
+  args: any
+  lug: any

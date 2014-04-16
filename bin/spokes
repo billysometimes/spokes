@@ -1,0 +1,290 @@
+#!/usr/bin/env dart
+
+import 'package:args/args.dart';
+import 'versionInfo.dart';
+import 'dart:convert';
+import 'dart:io';
+main(List<String> args){
+
+  //spokes --version
+  //spokes -v
+
+  ArgParser spin = new ArgParser();
+  spin.addOption("port",abbr:"p",defaultsTo:"3000");
+
+  ArgParser newApp = new ArgParser();
+  newApp.addOption("path",abbr:"p");
+
+  ArgParser destroy = new ArgParser();
+
+  ArgParser parser = new ArgParser();
+  parser.addFlag("version",abbr:'v');
+  parser.addFlag("quiet",abbr:"q");
+  parser.addFlag("loud",abbr:"l");
+
+  parser.addCommand("spin",spin);
+  parser.addCommand("new", newApp);
+  parser.addCommand("generate");
+  //same as generate
+  parser.addCommand("g");
+  parser.addCommand("destroy",destroy);
+
+  //parser.addCommand("console");
+  //same as console
+  //parser.addCommand("c");
+
+  parser.addFlag("help",abbr:"h");
+
+
+  var results = parser.parse(args,allowTrailingOptions: true);
+
+  if(results["version"]){
+    print(VersionInfo.version);
+  }
+
+  if(results.command != null) {
+    if(results.command.name == "new")
+      createNew(results);
+    else if(results.command.name == "generate" || results.command.name == "g")
+      generateNew(results);
+    else if(results.command.name == "destroy")
+      destroyThing(results);
+    else if(results.command.name == "spin"){
+      File startFile = new File(Directory.current.path+Platform.pathSeparator+"bin"+Platform.pathSeparator+"spokes.dart");
+      if(!startFile.existsSync()){
+        print("${startFile.path} does not exist.");
+      }else{
+        print("Starting on port ${results.command["port"]}");
+        Process.start("dart",[startFile.path,results.command["port"]]).then((process) {
+          process.stdout.transform(new Utf8Decoder())
+                        .transform(new LineSplitter())
+                        .listen((String line) => print(line));
+          process.stderr.listen((data) { });
+          process.exitCode.then((exitCode) {
+            print('exit code: $exitCode');
+          });
+        });
+      }
+    }
+
+  }
+}
+
+destroyThing(results){
+  if(results.command.rest.length < 2){
+     print("Error: destroy requires an object and a name.");
+  }else{
+    if(results.command.rest[0] == "app")
+      destroyApp(results);
+    else if(results.command.rest[0] == "controller")
+      destroyController(results);
+    else if(results.command.rest[0] == "model")
+      destroyModel(results);
+    else
+      print("${results.command.rest[0]} cannot be destroyed");
+  }
+}
+destroyApp(results){
+  String appName = results.command.rest[1];
+
+  Directory appDirectory = new Directory(Directory.current.path+Platform.pathSeparator+appName);
+  if(!appDirectory.existsSync()){
+    print("${appDirectory.path} does not exist");
+  }else{
+    print("destroying ${appName}");
+    appDirectory.deleteSync(recursive:true);
+    File settingsFile = new File(Directory.current.path+Platform.pathSeparator+"settings.dart");
+    List settingsLines = settingsFile.readAsLinesSync();
+    var appIndex = settingsLines.indexOf("import '${appName}/${appName}.dart';");
+    settingsLines.removeAt(appIndex);
+    settingsFile.writeAsStringSync(settingsLines.join("\n"));
+  }
+}
+
+destroyController(results){
+  String controllerName = results.command.rest[1];
+
+  File controllerFile = new File(Directory.current.path+Platform.pathSeparator+"controllers"+Platform.pathSeparator+controllerName+".dart");
+  if(!controllerFile.existsSync()){
+    print("${controllerFile.path} does not exist");
+  }else{
+    print("destroying controller $controllerName");
+    controllerFile.deleteSync();
+
+    List dirList = Directory.current.path.split(Platform.pathSeparator);
+    File mainFile = new File(dirList[dirList.length-1]+".dart");
+
+    List mainLines = mainFile.readAsLinesSync();
+    var controllerIndex = mainLines.indexOf("part 'controllers/$controllerName.dart';");
+    mainLines.removeAt(controllerIndex);
+    mainFile.writeAsStringSync(mainLines.join("\n"));
+  }
+}
+
+destroyModel(results){
+  String modelName = results.command.rest[1];
+
+  File modelFile = new File(Directory.current.path+Platform.pathSeparator+"models"+Platform.pathSeparator+modelName+".dart");
+  if(!modelFile.existsSync()){
+    print("${modelFile.path} does not exist");
+  }else{
+    print("destroying model $modelName");
+    modelFile.deleteSync();
+
+    List dirList = Directory.current.path.split(Platform.pathSeparator);
+    File mainFile = new File(dirList[dirList.length-1]+".dart");
+
+    List mainLines = mainFile.readAsLinesSync();
+    var modelIndex = mainLines.indexOf("part 'models/$modelName.dart';");
+    mainLines.removeAt(modelIndex);
+    mainFile.writeAsStringSync(mainLines.join("\n"));
+  }
+}
+
+makeApp(Directory dir,results){
+  List path = new List.from(Platform.script.pathSegments);
+  path[path.length-2] = "tool";
+  path[path.length-1] = "base";
+  List dirPathList = dir.path.split(Platform.pathSeparator);
+  var projIndex = dirPathList.indexOf(results.command.rest[1]);
+  dirPathList.removeRange(0, projIndex+1);
+  path.addAll(dirPathList);
+
+  Directory base = new Directory(Platform.pathSeparator+path.join(Platform.pathSeparator));
+  base.listSync().forEach((e){
+    var fileOrDirName = e.path.split(Platform.pathSeparator);
+    fileOrDirName = fileOrDirName[fileOrDirName.length-1];
+    print(fileOrDirName);
+    if(e is Directory){
+      var d = new Directory(dir.path+Platform.pathSeparator+fileOrDirName);
+      d.createSync();
+      makeApp(d,results);
+    }else if(e is File){
+      if(fileOrDirName == "pubspec")
+        fileOrDirName = "pubspec.yaml";
+      e.copySync(dir.path+Platform.pathSeparator+fileOrDirName);
+      File f = new File(dir.path+Platform.pathSeparator+fileOrDirName);
+      List lines = f.readAsLinesSync();
+      lines.removeAt(0);
+      lines.removeAt(lines.length-1);
+      lines[0] = lines[0].split("##").join(results.command.rest[1]);
+      f.writeAsStringSync(lines.join("\n"));
+    }
+  });
+
+}
+
+
+createNew(results){
+  if(results.command.rest.length < 2){
+     print("Error: new requires a project/app and a name.");
+   }else{
+     if(results.command.rest[0] == "project"){
+       Directory dir;
+       String out = "Creating Project: ${results.command.rest[1]}";
+       if(results.command["path"] != null) {
+         String path = results.command["path"];
+         if(path.substring(path.length-1, path.length) == Platform.pathSeparator){
+           path = path.substring(0, path.length-1);
+         }
+         dir = new Directory(path+Platform.pathSeparator+results.command.rest[1]);
+         out = out + " at ${path}";
+       }else{
+         dir = new Directory(Directory.current.path+Platform.pathSeparator+results.command.rest[1]);
+       }
+       if(!dir.existsSync()){
+         print(out);
+         dir.createSync();
+         makeApp(dir,results);
+       }else{
+         print("Application already exists.");
+       }
+     }else if(results.command.rest[0] == "app"){
+       File f = new File(Directory.current.path+Platform.pathSeparator+"settings.dart");
+       if(!f.existsSync()){
+         print("${Directory.current} is not a spokes project.");
+       }else{
+         Directory d = new Directory(Directory.current.path+Platform.pathSeparator+results.command.rest[1]);
+         if(d.existsSync()){
+           print("Application ${results.command.rest[1]} already exists");
+         }else{
+           d.createSync();
+           new Directory(d.path+Platform.pathSeparator+"controllers").createSync();
+           new Directory(d.path+Platform.pathSeparator+"models").createSync();
+           new File(d.path+Platform.pathSeparator+"${results.command.rest[1]}.dart").create().then((f){
+             f.writeAsStringSync(emptyApp(results.command.rest[1]));
+           });
+           List l = f.readAsLinesSync();
+           l.insert(l.indexOf("//import your apps")+1,"import '${results.command.rest[1]}/${results.command.rest[1]}.dart';");
+           f.writeAsStringSync(l.join("\n"));
+
+       }
+     }
+   }
+  }
+}
+
+generateNew(results){
+  if(results.command.rest[0] == "model"){
+                List dirList = Directory.current.path.split(Platform.pathSeparator);
+                File mainFile = new File(dirList[dirList.length-1]+".dart");
+                if(mainFile.existsSync()){
+                  File modelFile = new File(Directory.current.path+Platform.pathSeparator+"models"+Platform.pathSeparator+results.command.rest[1]+".dart");
+                  if(modelFile.existsSync()){
+                    print("model ${results.command.rest[1]} already exists");
+                  }else{
+                    print("creating model ${results.command.rest[1]}");
+                    modelFile.createSync();
+                    modelFile.writeAsStringSync(emptyModel(dirList[dirList.length-1],results.command.rest[1]));
+                    List lines = mainFile.readAsLinesSync();
+                    int modelIndex = lines.indexOf("//add models");
+                    lines.insert(modelIndex+1, "part 'models/${results.command.rest[1]}.dart';");
+                    mainFile.writeAsStringSync(lines.join("\n"));
+                  }
+
+                }else{
+                  print("${Directory.current} is not a spokes application");
+                }
+              }else if(results.command.rest[0] == "controller"){
+                List dirList = Directory.current.path.split(Platform.pathSeparator);
+                File mainFile = new File(dirList[dirList.length-1]+".dart");
+                if(mainFile.existsSync()){
+                  File controllerFile = new File(Directory.current.path+Platform.pathSeparator+"controllers"+Platform.pathSeparator+results.command.rest[1]+".dart");
+                  if(controllerFile.existsSync()){
+                    print("controller ${results.command.rest[1]} already exists");
+                  }else{
+                    print("creating controller ${results.command.rest[1]}");
+                    controllerFile.createSync();
+                    controllerFile.writeAsStringSync(emptyController(dirList[dirList.length-1],results.command.rest[1]));
+                    List lines = mainFile.readAsLinesSync();
+                    int controllerIndex = lines.indexOf("//add controllers");
+                    lines.insert(controllerIndex+1, "part 'controllers/${results.command.rest[1]}.dart';");
+                    mainFile.writeAsStringSync(lines.join("\n"));
+                  }
+
+                }else{
+                  print("${Directory.current} is not a spokes application");
+                }
+              }
+}
+emptyApp(appName){
+  return "library ${appName};\n\n"+
+         "import '../bin/spokes.dart';\n\n"+
+         "import 'dart:async';\n\n"+
+         "//add models\n"+
+         "\n" +
+         "//add controllers\n"+
+         "\n";
+}
+
+emptyModel(appName,modelName){
+  return "part of ${appName};\n\n" +
+         "class ${modelName} extends SpokesModel {\n\n" +
+         "}";
+}
+
+emptyController(appName,controllerName){
+  return "part of ${appName};\n\n" +
+         "class $controllerName extends SpokesController {\n\n"+
+         "}";
+}
