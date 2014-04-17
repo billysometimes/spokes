@@ -154,12 +154,13 @@ makeApp(Directory dir,results){
   base.listSync().forEach((e){
     var fileOrDirName = e.path.split(Platform.pathSeparator);
     fileOrDirName = fileOrDirName[fileOrDirName.length-1];
-    print(fileOrDirName);
     if(e is Directory){
+      print(fileOrDirName);
       var d = new Directory(dir.path+Platform.pathSeparator+fileOrDirName);
       d.createSync();
       makeApp(d,results);
-    }else if(e is File){
+    }else if(e is File && fileOrDirName != ".gitignore"){
+      print(fileOrDirName);
       if(fileOrDirName == "pubspec")
         fileOrDirName = "pubspec.yaml";
       e.copySync(dir.path+Platform.pathSeparator+fileOrDirName);
