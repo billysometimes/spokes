@@ -58,6 +58,8 @@ render() Has one required argument: the request and two optional arguments:a map
 It renders the lug template located in the /templates folder, passing in the map of parameters.  If a path is not specified 
 spokes looks for a template with the same name as the request.
 
+controllers can be destroyed completely with the destroy command:
+$ spokes destroy controller botchedController
 
 Routes:
 
@@ -75,6 +77,9 @@ Models:
   Models can be generated with the command:
     $ spokes generate model UserModel
     
+  models can be destroyed completely with the destroy command:
+  $ spokes destroy model botchedModel  
+  
   The default database is rethinkDB.  this can be changed in the settings.dart file, or a second database
   can be added.
   
