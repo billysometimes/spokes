@@ -1,6 +1,6 @@
 /**
-import 'packages:spokes/spokes.dart' as Spokes;
-export 'packages:spokes/spokes.dart' show SpokesModel, SpokesController, SpokesRoutes, SpokesUrl, SpokesRequest;
+import 'package:spokes/spokes.dart' as Spokes;
+export 'package:spokes/spokes.dart' show SpokesModel, SpokesController, SpokesRoutes, SpokesUrl, SpokesRequest;
 
 export 'dart:io';
 
