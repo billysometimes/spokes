@@ -27,9 +27,7 @@ class SpokesRoutes {
 
   tryAndServe(HttpRequest request){
     String path = PUBLIC_PATH+_fixUri(request);
-    if(spokesOptions["recompileDartFiles"] && _compileDart(request)){
-      return true;
-    }else if(new File(path).existsSync()){
+    if(new File(path).existsSync()){
       var extension= path.substring(path.indexOf("."));
       if(extension == ".svg"){
         request.response.headers.add("Accept-Ranges", "bytes");
@@ -44,17 +42,6 @@ class SpokesRoutes {
     return false;
  }
 
-  bool _compileDart(HttpRequest request){
-    if(request.uri.path.indexOf(".dart.js") > -1){
-      ProcessResult result = Process.runSync(spokesOptions["dart2js"], ["-o",PUBLIC_PATH+request.uri.path,PUBLIC_PATH+request.uri.path.substring(0,request.uri.path.lastIndexOf("."))]);
-      if(result.exitCode == 0){
-        new File(PUBLIC_PATH+_fixUri(request)).openRead().pipe(request.response).then((d){request.response.close();});
-        return true;
-      }
-    }
-    return false;
-  }
-
 
   String _fixUri(HttpRequest request){
     var builtPath = request.uri.path;
@@ -62,7 +49,6 @@ class SpokesRoutes {
       builtPath +=".html";
     return builtPath;
   }
-
 
 
   Map _matches(SpokesUrl p, HttpRequest req) {

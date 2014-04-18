@@ -36,9 +36,10 @@ part 'routes.dart';
 
     Routes router = new Routes();
 
-    Map spokesOptions = {"recompileDartFiles":false,
+    Map spokesOptions = {
                          "dart2js":Platform.executable+Platform.pathSeparator+'dart2js',"env":"development",
-                         "packages":Directory.current.path+Platform.pathSeparator+"packages"};
+                         "packages":Directory.current.path+Platform.pathSeparator+"packages"
+                        };
 
 
     Rethinkdb db = new Rethinkdb();
