@@ -37,7 +37,7 @@ part 'routes.dart';
     Routes router = new Routes();
 
     Map spokesOptions = {
-                         "dart2js":Platform.executable+Platform.pathSeparator+'dart2js',"env":"development",
+                         "dart2js":'dart2js',"env":"development",
                          "packages":Directory.current.path+Platform.pathSeparator+"packages"
                         };
 

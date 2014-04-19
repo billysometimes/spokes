@@ -14,7 +14,7 @@ main(List port){
     Spokes.port = int.parse(port[0]);
   }
 
-  Directory scripts = new Directory(Directory.current.parent.path+Platform.pathSeparator+"public"+Platform.pathSeparator+"scripts");
+  Directory scripts = new Directory(Directory.current.path+Platform.pathSeparator+"public"+Platform.pathSeparator+"scripts");
 
   //compile javascript at runtime
   List initialScripts = scripts.listSync(recursive:true);
