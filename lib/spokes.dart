@@ -1,6 +1,7 @@
 library spokes;
 
 import 'dart:io';
+import 'dart:convert';
 part 'src/spokesServer.dart';
 part 'src/spokesController.dart';
 part 'src/spokesRoutes.dart';

@@ -10,7 +10,9 @@ class SpokesController {
      templateEngine.render(path,params).then((msg){
       request.request.response.write(msg);
       request.request.response.close();
-    });
+    }).catchError((error){
+       request.request.response.write(error);
+       });
   }
 
   serve(SpokesRequest request,[String fileName]){
@@ -20,5 +22,11 @@ class SpokesController {
     }
     print("trying to serve $path");
     return new File(path).openRead().pipe(request.request.response).then((d){request.request.response.close();});
+  }
+
+  sendJSON(SpokesRequest request,Map jsonData){
+    request.request.response..headers.set(HttpHeaders.CONTENT_TYPE, 'application/json');
+    request.request.response..headers..write(JSON.encode(jsonData))..close();
+
   }
 }
