@@ -8,10 +8,10 @@ class SpokesController {
       path = template;
     }
      templateEngine.render(path,params).then((msg){
-      request.request.response.write(msg);
-      request.request.response.close();
+      request.response.write(msg);
+      request.response.close();
     }).catchError((error){
-       request.request.response.write(error);
+       request.response.write(error);
        });
   }
 
@@ -25,8 +25,8 @@ class SpokesController {
   }
 
   sendJSON(SpokesRequest request,var jsonData){
-    request.request.response..headers.set(HttpHeaders.CONTENT_TYPE, 'application/json');
-    request.request.response..headers..write(JSON.encode(jsonData))..close();
+    request.response..headers.set(HttpHeaders.CONTENT_TYPE, 'application/json');
+    request.response..headers..write(JSON.encode(jsonData))..close();
 
   }
 }

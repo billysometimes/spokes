@@ -11,4 +11,6 @@ class SpokesRequest {
     uri = new Uri(path: uriPath);
   }
 
+  HttpResponse get response => request.response;
+
 }
