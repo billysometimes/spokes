@@ -24,7 +24,7 @@ class SpokesController {
     return new File(path).openRead().pipe(request.request.response).then((d){request.request.response.close();});
   }
 
-  sendJSON(SpokesRequest request,Map jsonData){
+  sendJSON(SpokesRequest request,var jsonData){
     request.request.response..headers.set(HttpHeaders.CONTENT_TYPE, 'application/json');
     request.request.response..headers..write(JSON.encode(jsonData))..close();
 
