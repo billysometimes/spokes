@@ -12,7 +12,7 @@ import 'middleware/logging.dart';
 import 'package:rethinkdb_driver/rethinkdb_driver.dart';
 
 //add template engine
-import '../../dart/lug/lib/lug.dart';
+import 'package:lug/lug.dart';
 
 //import your apps
 
