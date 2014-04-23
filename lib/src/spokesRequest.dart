@@ -6,6 +6,7 @@ class SpokesRequest {
   Uri uri;
   SpokesRequest(this._request){
     this.params = new Map.from(this._request.uri.queryParameters);
+    uri = new Uri(path:this._request.uri.path);
     response = new SpokesResponse(_request.response);
   }
 

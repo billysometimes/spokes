@@ -14,9 +14,10 @@ class SpokesRoutes {
         }
       });
 
+      var middleWareRequest = request;
       for(final e in middleWares){
         try{
-          e.processController(request,ctrl);
+          middleWareRequest = e.processController(middleWareRequest,ctrl);
         }on NoSuchMethodError{
 
         }catch(e){
