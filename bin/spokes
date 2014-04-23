@@ -145,22 +145,30 @@ destroyModel(results){
 
 makeApp(Directory dir,results){
   List path = new List.from(Platform.script.pathSegments);
+  path.remove("");
   path[path.length-2] = "tool";
   path[path.length-1] = "base";
   List dirPathList = dir.path.split(Platform.pathSeparator);
   var projIndex = dirPathList.indexOf(results.command.rest[1]);
   dirPathList.removeRange(0, projIndex+1);
   path.addAll(dirPathList);
-
-  Directory base = new Directory(Platform.pathSeparator+path.join(Platform.pathSeparator));
+  String basePath;
+  if(Platform.isWindows){
+    basePath = path.join(Platform.pathSeparator);
+  }else{
+    basePath = Platform.pathSeparator+path.join(Platform.pathSeparator);
+  }
+  Directory base = new Directory(basePath);
   base.listSync().forEach((e){
     var fileOrDirName = e.path.split(Platform.pathSeparator);
     fileOrDirName = fileOrDirName[fileOrDirName.length-1];
     if(e is Directory){
       print(fileOrDirName);
       var d = new Directory(dir.path+Platform.pathSeparator+fileOrDirName);
-      d.createSync();
-      makeApp(d,results);
+      if(!FileSystemEntity.isLinkSync(e.path)){
+        d.createSync();
+        makeApp(d,results);
+      }
     }else if(e is File && fileOrDirName != ".gitignore"){
       print(fileOrDirName);
       if(fileOrDirName == "pubspec")

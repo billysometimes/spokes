@@ -14,6 +14,7 @@ class SpokesServer {
 
   _start(){
     HttpServer.bind(_host, _port).then((HttpServer server){
+        print("server started on $_host:$_port");
         server.listen((HttpRequest request)=>_execMiddleWare(new SpokesRequest(request)));
     });
   }

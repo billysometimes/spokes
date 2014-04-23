@@ -33,7 +33,7 @@ class SpokesLogger {
       });
       return c.future;
     }else{
-      return _logRequest(request);
+      return _logRequest(req);
     }
   }
 

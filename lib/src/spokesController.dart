@@ -59,11 +59,9 @@ class SpokesController {
     });
   }
 
-  serve(SpokesRequest request,[String fileName]){
-    String path = BASE_PATH+request.uri.pathSegments.join(Platform.pathSeparator);
-    if(fileName != null){
-      path = BASE_PATH+fileName;
-    }
+  serve(SpokesRequest request,String fileName){
+      var path = BASE_PATH+Platform.pathSeparator+fileName;
+
     return new File(path).openRead().pipe(request.response).then((d){
       var middlewareRequest = request;
       for(final e in middleWares){

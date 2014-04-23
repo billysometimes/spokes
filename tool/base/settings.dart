@@ -18,15 +18,15 @@ import 'package:lug/lug.dart';
 
 part 'routes.dart';
 
-    String BASE_PATH = Directory.current.path + Platform.pathSeparator;
+    String BASE_PATH = Directory.current.path;
 
-    Map _templateOptions = {"templatePath": "templates/",     //where templates are stored
-                          "debug"       : true,                          //debug stuff
-                          "cache"       : false,                         //whether or not hub should cache files
-                          "cachePath"   : BASE_PATH+"/cache",            //relative path the cache uses
+    Map _templateOptions = {"templatePath": "templates",     //where templates are stored
+                          "debug"       : true,              //debug stuff
+                          "cache"       : false,             //whether or not hub should cache files
+                          "cachePath"   : "cache",           //relative path the cache uses
                         };
 
-    String PUBLIC_PATH = "public/";
+    String PUBLIC_PATH = "public";
 
     //middlewares
     List middleWares = [new SpokesLogger(spokesOptions["env"])];
@@ -38,7 +38,8 @@ part 'routes.dart';
 
     //general options
     Map spokesOptions = {
-                         "dart2js":'dart2js',"env":"development",
+                         "dart2js":'dart2js',
+                         "env":"development",
                          "packages":"packages"
                         };
 
