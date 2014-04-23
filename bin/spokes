@@ -59,7 +59,9 @@ main(List<String> args){
           process.stdout.transform(new Utf8Decoder())
                         .transform(new LineSplitter())
                         .listen((String line) => print(line));
-          process.stderr.listen((data) { });
+          process.stderr.transform(new Utf8Decoder())
+                        .transform(new LineSplitter())
+                        .listen((String line) => print(line));
           process.exitCode.then((exitCode) {
             print('exit code: $exitCode');
           });
@@ -166,9 +168,11 @@ makeApp(Directory dir,results){
       e.copySync(dir.path+Platform.pathSeparator+fileOrDirName);
       File f = new File(dir.path+Platform.pathSeparator+fileOrDirName);
       List lines = f.readAsLinesSync();
-      lines.removeAt(0);
-      lines.removeAt(lines.length-1);
-      lines[0] = lines[0].split("##").join(results.command.rest[1]);
+      if(!lines.isEmpty){
+        lines.removeAt(0);
+        lines.removeAt(lines.length-1);
+        lines[0] = lines[0].split("##").join(results.command.rest[1]);
+      }
       f.writeAsStringSync(lines.join("\n"));
     }
   });

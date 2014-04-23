@@ -1,16 +1,19 @@
 part of spokes;
 class SpokesRequest {
-  final HttpRequest request;
+  final HttpRequest _request;
+  SpokesResponse response;
   Map params;
   Uri uri;
-  SpokesRequest(this.request){
-    this.params = new Map.from(this.request.uri.queryParameters);
+  SpokesRequest(this._request){
+    this.params = new Map.from(this._request.uri.queryParameters);
+    response = new SpokesResponse(_request.response);
   }
 
   setUri(uriPath){
     uri = new Uri(path: uriPath);
   }
 
-  HttpResponse get response => request.response;
+  get method => _request.method;
 
+  get request => _request;
 }

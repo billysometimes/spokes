@@ -6,4 +6,5 @@ dependencies:
   lug: any
   rethinkdb_driver: any
   spokes: any
+  logging_handlers: any
 **/

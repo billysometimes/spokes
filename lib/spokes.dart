@@ -8,6 +8,7 @@ part 'src/spokesRoutes.dart';
 part 'src/spokesModel.dart';
 part 'src/spokesUrl.dart';
 part 'src/spokesRequest.dart';
+part 'src/spokesResponse.dart';
 
   List middleWares;
   String BASE_PATH;
