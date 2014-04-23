@@ -4,7 +4,6 @@ class SpokesController {
 
   render(SpokesRequest request, [Map params,String template]){
     var path = request.uri.path;
-    print("SERVING:"+path);
     if(template !=null){
       path = template;
     }

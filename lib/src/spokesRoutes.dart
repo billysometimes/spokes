@@ -4,7 +4,6 @@ class SpokesRoutes {
 
   manage(SpokesRequest request){
 
-    print("yeah managed");
     var served = tryAndServe(request);
     Function ctrl;
     if(!served){
@@ -39,12 +38,9 @@ class SpokesRoutes {
 
   tryAndServe(SpokesRequest request){
     String path = PUBLIC_PATH+_fixUri(request);
-    print("can we find: "+request.request.uri.pathSegments.first);
-    if(request.request.uri.pathSegments.first == "packages")
+    if(!request.request.uri.pathSegments.isEmpty && request.request.uri.pathSegments.first == "packages")
        path = BASE_PATH+_fixUri(request);
-    print("oh" +path);
     if(new File(path).existsSync()){
-      print("yeah found");
       var extension= path.substring(path.indexOf("."));
       if(extension == ".svg"){
         request.response.headers.add("Accept-Ranges", "bytes");
@@ -68,7 +64,7 @@ class SpokesRoutes {
     List builtPath = new List.from(request.request.uri.pathSegments);
     if(builtPath.isNotEmpty && builtPath.last.indexOf(".") == -1)
       builtPath[builtPath.length-1] +=".html";
-    return builtPath.join(Platform.pathSeparator);
+    return builtPath.isNotEmpty ? builtPath.join(Platform.pathSeparator) : "";
   }
 
 
