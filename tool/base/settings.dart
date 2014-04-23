@@ -15,7 +15,6 @@ import 'package:rethinkdb_driver/rethinkdb_driver.dart';
 import '../../dart/lug/lib/lug.dart';
 
 //import your apps
-import 'chatApp/chatApp.dart';
 
 part 'routes.dart';
 
