@@ -163,9 +163,9 @@ makeApp(Directory dir,results){
     var fileOrDirName = e.path.split(Platform.pathSeparator);
     fileOrDirName = fileOrDirName[fileOrDirName.length-1];
     if(e is Directory){
-      print(fileOrDirName);
       var d = new Directory(dir.path+Platform.pathSeparator+fileOrDirName);
       if(!FileSystemEntity.isLinkSync(e.path)){
+        print(fileOrDirName);
         d.createSync();
         makeApp(d,results);
       }
