@@ -24,8 +24,8 @@ class SpokesLogger {
     }
     Logger.root.onRecord.listen(new SyncFileLoggingHandler("log"+Platform.pathSeparator+"audit.log",transformer: new StringTransformer(messageFormat:"%t %m")));
   }
-  log(HttpRequest req){
-    var msg = "REQUEST: ${req.method} ${req.uri.path}";
+  processRequest(req){
+    var msg = "REQUEST: ${req.method} ${req.request.uri.path}";
     _auditLogger.fine(msg);
     if(_env == "development") print(msg);
     return req;

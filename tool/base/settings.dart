@@ -1,6 +1,7 @@
 /**
 library ##;
 
+
 import 'dart:io';
 import 'bin/spokes.dart';
 
@@ -11,25 +12,25 @@ import 'middleware/logging.dart';
 import 'package:rethinkdb_driver/rethinkdb_driver.dart';
 
 //add template engine
-import 'package:lug/lug.dart';
+import '../../dart/lug/lib/lug.dart';
 
 //import your apps
 import 'chatApp/chatApp.dart';
 
 part 'routes.dart';
 
-    String BASE_PATH = Directory.current.path;
+    String BASE_PATH = Directory.current.path + Platform.pathSeparator;
 
-    Map _templateOptions = {"templatePath": "templates",     //where templates are stored
+    Map _templateOptions = {"templatePath": "templates/",     //where templates are stored
                           "debug"       : true,                          //debug stuff
                           "cache"       : false,                         //whether or not hub should cache files
-                          "cachePath"   : "cache",            //relative path the cache uses
+                          "cachePath"   : BASE_PATH+"/cache",            //relative path the cache uses
                         };
 
-    String PUBLIC_PATH = "public";
+    String PUBLIC_PATH = "public/";
 
     //middlewares
-    List middleWares = [new SpokesLogger(spokesOptions["env"]).log,new Routes().manage];
+    List middleWares = [new SpokesLogger(spokesOptions["env"])];
 
     //default template engine
     var templateEngine = new Lug(_templateOptions);
@@ -41,6 +42,8 @@ part 'routes.dart';
                          "dart2js":'dart2js',"env":"development",
                          "packages":"packages"
                         };
+
+    SpokesRoutes router = new Routes();
 
     //database config
     Rethinkdb db = new Rethinkdb();
