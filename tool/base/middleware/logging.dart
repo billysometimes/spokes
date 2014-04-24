@@ -28,7 +28,7 @@ class SpokesLogger {
   processRequest(req){
     if(req is Future){
       Completer c = new Completer();
-      req.then((SpokesRequest request){
+      req.then((request){
         c.complete(_logRequest(request));
       });
       return c.future;
@@ -53,7 +53,7 @@ class SpokesLogger {
     return request;
   }
 
-  _logRequest(SpokesRequest req){
+  _logRequest(req){
     var msg = "REQUEST: ${req.method} ${req.request.uri.path}";
     _auditLogger.fine(msg);
     if(_env == "development") print(msg);
