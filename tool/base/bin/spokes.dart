@@ -29,6 +29,8 @@ main(List port){
         }else{
           print("error compiling ${data.path} to js");
         }
+      }).catchError((error){
+        print(error);
       });
     }
   });
