@@ -40,6 +40,7 @@ main(List port){
   Spokes.PUBLIC_PATH = PUBLIC_PATH;
   Spokes.templateEngine = templateEngine;
   Spokes.router = router;
+  Spokes.db = db;
   print("starting server");
   Spokes.start(certificateName);
   Spokes.spokesOptions = spokesOptions;

@@ -4,6 +4,12 @@ class SpokesRequest {
   SpokesResponse response;
   Map params;
   Uri uri;
+  List<Function> beforeFilters =[];
+  List<Function> afterFilters = [];
+  List<Function> aroundFilters = [];
+
+  Function renderFunction;
+
   SpokesRequest(this._request){
     this.params = new Map.from(this._request.uri.queryParameters);
     uri = new Uri(path:this._request.uri.path);
@@ -14,7 +20,9 @@ class SpokesRequest {
     uri = new Uri(path: uriPath);
   }
 
-  get method => _request.method;
+  String get method => _request.method;
 
-  get request => _request;
+  HttpRequest get request => _request;
+
+  HttpSession get session => _request.session;
 }

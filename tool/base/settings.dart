@@ -6,7 +6,7 @@ import 'dart:io';
 import 'bin/spokes.dart';
 
 //add middlewares here
-import 'middleware/logging.dart';
+import 'middleware/Logging.dart';
 
 //add your database
 import 'package:rethinkdb_driver/rethinkdb_driver.dart';

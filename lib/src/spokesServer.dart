@@ -1,6 +1,6 @@
 part of spokes;
 
-class SpokesServer {
+class SpokesServer{
   String _host = "127.0.0.1";
   int _port    = 3000;
 
@@ -27,27 +27,22 @@ class SpokesServer {
 
 
   _execMiddleWare(SpokesRequest request) {
-    var req = request;
+
     for(final e in middleWares){
       if(!request.response.isDone){
         try{
-          req = e.processRequest(req);
+          e.processRequest(request);
         }on NoSuchMethodError{
           //do nothing
-        }catch(e){
-          print("something super bad happened");
+        }catch(error){
+          print(error);
         }
       }
     }
-    if(req is Future){
-      req.then((SpokesRequest r){
-        if(!r.response.isDone)
-          router.manage(r);
-      });
-    }else{
-      if(!req.response.isDone)
-        router.manage(req);
-    }
+    print(middleWares);
+    print(router);
+    if(!request.response.isDone)
+      router.manage(request);
   }
 
 }

@@ -1,114 +1,112 @@
 part of spokes;
 
-class SpokesController {
+class SpokesController{
+
+  List beforeFilters;
+
+  List afterFilters;
 
   render(SpokesRequest request, [Map params,String template]){
     var path = request.uri.path;
     if(template !=null){
       path = template;
     }
-     templateEngine.render(path,params).then((msg){
-      request.response.write(msg);
-      var middlewareRequest = request;
-      for(final e in middleWares){
-        try{
-          middlewareRequest = e.processTemplateResponse(middlewareRequest);
-          middlewareRequest = e.processResponse(middlewareRequest);
-        }on NoSuchMethodError{
+     request.renderFunction = templateEngine.render;
+     for(final e in middleWares){
+       try{
+         if(!request.response.isDone)
+           e.processTemplateResponse(request,params);
+       }on NoSuchMethodError{
 
-        }catch(e){
-          print(e);
-        }
-      }
-      if(middlewareRequest is Future){
-        middlewareRequest.then((SpokesRequest r){
-          if(!r.response.isDone){
-            r.response.close();
-          }
-        });
-      }else{
-        if(!middlewareRequest.response.isDone){
-          middlewareRequest.response.close();
-        }
-      }
-    }).catchError((error){
+       }catch(error){
+         print(error);
+       }
 
-       request.response.write(error);
-       var middlewareRequest = request;
-       for(final e in middleWares){
-         try{
-           middlewareRequest = e.processResponse(request);
-           middlewareRequest = e.processException(request,error);
+       try{
+         if(!request.response.isDone)
+           e.processResponse(request);
          }on NoSuchMethodError{
 
-         }catch(e){
-           print(e);
+         }catch(error){
+           print(error);
+         }
+     }
+
+    if(!request.response.isDone) {
+       request.renderFunction(path,params).then((msg){
+         request.response.write(msg);
+
+         request.response.close();
+      }).catchError((error){
+
+       request.response.write(error);
+
+       for(final e in middleWares){
+         try{
+         if(!request.response.isDone)
+           e.processException(request,error);
+         }on NoSuchMethodError{
+
+         }catch(error){
+           print(error);
+         }
+         try{
+         if(!request.response.isDone)
+           e.processResponse(request);
+         }on NoSuchMethodError{
+
+         }catch(error){
+           print(error);
          }
        }
-       if(middlewareRequest is Future){
-         middlewareRequest.then((SpokesRequest r){
-           if(!r.response.isDone){
-             r.response.close();
-           }
-         });
-       }else{
-         if(!middlewareRequest.response.isDone){
-           middlewareRequest.response.close();
+       if(!request.response.isDone){
+         request.response.close();
          }
-       }
-    });
+      });
+    }
   }
 
   serve(SpokesRequest request,String fileName){
-      var path = BASE_PATH+Platform.pathSeparator+fileName;
+    var path = BASE_PATH+Platform.pathSeparator+fileName;
 
-    return new File(path).openRead().pipe(request.response).then((d){
-      var middlewareRequest = request;
-      for(final e in middleWares){
-        try{
-          middlewareRequest = e.processResponse(middlewareRequest);
-        }on NoSuchMethodError{
+    request.renderFunction = new File(path).openRead().pipe;
 
-        }catch(e){
-          print(e);
-        }
+    for(final e in middleWares){
+      try{
+      if(!request.response.isDone)
+        e.processResponse(request);
+      }on NoSuchMethodError{
+
+      }catch(error){
+       print(error);
       }
-      if(middlewareRequest is Future){
-        middlewareRequest.then((SpokesRequest r){
-          if(!r.response.isDone)
-            r.response.close();
-        });
-      }else{
-        if(!middlewareRequest.response.isDone){
-          middlewareRequest.response.close();
+    }
+
+    request.renderFunction(request.response).then((d){
+
+        if(!request.response.isDone){
+          request.response.close();
         }
-      }
     });
   }
 
   sendJSON(SpokesRequest request,var jsonData){
     request.response..headers.set(HttpHeaders.CONTENT_TYPE, 'application/json');
     request.response..headers..write(JSON.encode(jsonData));
-    var middlewareRequest = request;
+
     for(final e in middleWares){
       try{
-        middlewareRequest = e.processResponse(middlewareRequest);
+        if(!request.response.isDone)
+          e.processResponse(request);
       }on NoSuchMethodError{
 
-      }catch(e){
-        print(e);
-      }
-    }
-    if(middlewareRequest is Future){
-      middlewareRequest.then((SpokesRequest r){
-        if(!r.response.isDone)
-          r.response.close();
-      });
-    }else{
-      if(!middlewareRequest.response.isDone){
-        middlewareRequest.response.close();
+      }catch(error){
+        print(error);
       }
     }
 
-  }
+    if(!request.response.isDone){
+        request.response.close();
+      }
+    }
 }

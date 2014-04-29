@@ -1,30 +1,58 @@
 part of spokes;
 
-  class SpokesRoutes {
+  class SpokesRoutes{
 
     manage(SpokesRequest request){
-      var served = tryAndServe(request);
+      var served = _tryAndServe(request);
       Function ctrl;
+      var d;
       if(!served){
-        this.urls.forEach((k,v){
+        this.urls.forEach((k,Map<String,Object>v){
           bool match = _matches(k,request);
           if(match){
-            ctrl = v;
+            Object cls = v["controller"];
+            ClassMirror cm = reflectClass(cls);
+            var ncm = cm.newInstance(new Symbol(""),[]);
+            //var tc = ncm.reflectee.beforeFilter;
+            //request = tc(request);
+            List beforeFilters = ncm.getField(new Symbol("beforeFilters")).reflectee;
+
+            if(beforeFilters != null){
+              beforeFilters.forEach((Map filter){
+                if(filter["only"] == null || filter["only"].contains(v["action"])){
+                  request.beforeFilters.add(ncm.getField(new Symbol(filter["action"])).reflectee);
+                }
+              });
+            }
+
+            List afterFilters = ncm.getField(new Symbol("afterFilters")).reflectee;
+
+            if(afterFilters != null){
+              afterFilters.forEach((Map filter){
+                if(filter["only"] == null || filter["only"].contains(v["action"])){
+                  request.afterFilters.add(ncm.getField(new Symbol(filter["action"])).reflectee);
+                }
+              });
+
+            }
+
+            ctrl = ncm.getField(new Symbol(v["action"])).reflectee;
           }
         });
 
-        var middleWareRequest = request;
         for(final e in middleWares){
           try{
-            middleWareRequest = e.processController(middleWareRequest,ctrl);
+            if(!request.response.isDone)
+              e.processController(request,ctrl);
           }on NoSuchMethodError{
 
-          }catch(e){
-            print(e);
+          }catch(error){
+            print(error);
           }
         }
-        if(!request.response.isDone && ctrl != null)
+        if(!request.response.isDone && ctrl != null){
           ctrl(request);
+        }
 
         if(ctrl == null){
           if(!request.response.isDone){
@@ -36,7 +64,7 @@ part of spokes;
 
     }
 
-    tryAndServe(SpokesRequest request){
+    _tryAndServe(SpokesRequest request){
       var path = _fixUri(request);
 
       if(new File(path).existsSync()){
