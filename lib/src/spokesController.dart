@@ -91,6 +91,12 @@ class SpokesController{
     });
   }
 
+  redirect(SpokesRequest req,String location,{statusCode: HttpStatus.TEMPORARY_REDIRECT}){
+    req.response.headers.set(HttpHeaders.LOCATION,location);
+    req.response.statusCode = statusCode;
+    req.response.close();
+  }
+
   sendJSON(SpokesRequest request,var jsonData){
     request.response..headers.set(HttpHeaders.CONTENT_TYPE, 'application/json');
     request.response..headers..write(JSON.encode(jsonData));

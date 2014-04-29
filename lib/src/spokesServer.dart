@@ -39,8 +39,7 @@ class SpokesServer{
         }
       }
     }
-    print(middleWares);
-    print(router);
+
     if(!request.response.isDone)
       router.manage(request);
   }

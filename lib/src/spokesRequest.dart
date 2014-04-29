@@ -6,7 +6,6 @@ class SpokesRequest {
   Uri uri;
   List<Function> beforeFilters =[];
   List<Function> afterFilters = [];
-  List<Function> aroundFilters = [];
 
   Function renderFunction;
 

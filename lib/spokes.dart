@@ -11,7 +11,6 @@ part 'src/spokesModel.dart';
 part 'src/spokesUrl.dart';
 part 'src/spokesRequest.dart';
 part 'src/spokesResponse.dart';
-part 'src/spokesFilter.dart';
 
 
   List middleWares;
@@ -26,8 +25,6 @@ part 'src/spokesFilter.dart';
   SpokesServer _server;
 
   start([String certificateName]){
-    print("ahem");
-    print(router);
     _server = new SpokesServer(null,port);
     if(certificateName == null)
       return _server._start();

@@ -65,29 +65,21 @@ part of spokes;
     }
 
     _tryAndServe(SpokesRequest request){
-      var path = _fixUri(request);
+       var path = _fixUri(request);
 
-      if(new File(path).existsSync()){
-        var extension= path.substring(path.indexOf("."));
-        if(extension == ".svg"){
-          request.response.headers.add("Accept-Ranges", "bytes");
-          request.response.headers.add("Content-Type", "image/svg+xml");
-        }
-        new File(path).openRead().pipe(request.response).then((d){
-          request.response.close();
-        });
-        return true;
-     }
-      return false;
-   }
-
+       if(new File(path).existsSync()){
+         new SpokesController().serve(request, path);
+         return true;
+       }
+       return false;
+    }
 
     String _fixUri(SpokesRequest request){
       List builtPath = new List.from(request.request.uri.pathSegments);
+
       if(builtPath.isNotEmpty && builtPath.first != "packages")
         builtPath.insert(0, PUBLIC_PATH);
-      if(builtPath.isNotEmpty)
-        builtPath.insert(0, BASE_PATH);
+
 
       if(builtPath.isNotEmpty && builtPath.last.indexOf(".") == -1)
         builtPath[builtPath.length-1] +=".html";
