@@ -13,8 +13,7 @@ part of spokes;
             Object cls = v["controller"];
             ClassMirror cm = reflectClass(cls);
             var ncm = cm.newInstance(new Symbol(""),[]);
-            //var tc = ncm.reflectee.beforeFilter;
-            //request = tc(request);
+
             List beforeFilters = ncm.getField(new Symbol("beforeFilters")).reflectee;
 
             if(beforeFilters != null){
