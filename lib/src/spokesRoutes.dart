@@ -20,7 +20,7 @@ part of spokes;
             if(beforeFilters != null){
               beforeFilters.forEach((Map filter){
                 if(filter["only"] == null || filter["only"].contains(v["action"])){
-                  request.beforeFilters.add(ncm.getField(new Symbol(filter["action"])).reflectee);
+                  request.beforeFilters.add(filter["action"]);
                 }
               });
             }
@@ -30,7 +30,7 @@ part of spokes;
             if(afterFilters != null){
               afterFilters.forEach((Map filter){
                 if(filter["only"] == null || filter["only"].contains(v["action"])){
-                  request.afterFilters.add(ncm.getField(new Symbol(filter["action"])).reflectee);
+                  request.afterFilters.add(filter["action"]);
                 }
               });
 
