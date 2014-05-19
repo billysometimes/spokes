@@ -1,20 +1,19 @@
 /**
 import 'package:spokes/spokes.dart' as Spokes;
-export 'package:spokes/spokes.dart' show SpokesModel, SpokesController, SpokesRoutes, SpokesUrl, SpokesRequest;
+export 'package:spokes/spokes.dart'show SpokesModel, SpokesController, SpokesRoutes, SpokesUrl, SpokesRequest, Field;
 
 import 'dart:io';
 export 'dart:io';
 import 'dart:async';
 import '../settings.dart';
-export '../settings.dart';
 
-main(List port){
-
-  if(port.isNotEmpty){
-    Spokes.port = int.parse(port[0]);
+main(List p){
+  int port = 3000;
+  if(p.isNotEmpty){
+    port = int.parse(p[0]);
   }
 
-  Directory scripts = new Directory(Directory.current.path+Platform.pathSeparator+"public"+Platform.pathSeparator+"scripts");
+  Directory scripts = new Directory(PUBLIC_PATH);
 
   //compile javascript at runtime
   List initialScripts = scripts.listSync(recursive:true);
@@ -29,8 +28,6 @@ main(List port){
         }else{
           print("error compiling ${data.path} to js");
         }
-      }).catchError((error){
-        print(error);
       });
     }
   });
@@ -38,13 +35,12 @@ main(List port){
   Spokes.middleWares = middleWares;
   Spokes.BASE_PATH = BASE_PATH;
   Spokes.PUBLIC_PATH = PUBLIC_PATH;
-  Spokes.templateEngine = templateEngine;
   Spokes.router = router;
+  Spokes.templateEngine = templateEngine;
   Spokes.db = db;
   print("starting server");
   Spokes.start(certificateName);
   Spokes.spokesOptions = spokesOptions;
-
 
 
   Stream scriptStream = scripts.watch(recursive:true);

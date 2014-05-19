@@ -15,7 +15,13 @@ class SpokesServer{
   _start(){
     HttpServer.bind(_host, _port).then((HttpServer server){
         print("server started on $_host:$_port");
-        server.listen((HttpRequest request)=>_execMiddleWare(new SpokesRequest(request)));
+        server.listen((HttpRequest request){
+          runZoned((){
+          _execMiddleWare(new SpokesRequest(request));
+          },
+          onError: (e, stackTrace){request.response.write('$e $stackTrace');request.response.close();});
+
+        });
     });
   }
 

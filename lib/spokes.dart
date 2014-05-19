@@ -11,7 +11,7 @@ part 'src/spokesModel.dart';
 part 'src/spokesUrl.dart';
 part 'src/spokesRequest.dart';
 part 'src/spokesResponse.dart';
-
+part 'src/field.dart';
 
   List middleWares;
   String BASE_PATH;
@@ -22,6 +22,7 @@ part 'src/spokesResponse.dart';
   Map spokesOptions;
   int port;
   var db;
+  String templatePath;
   SpokesServer _server;
 
   start([String certificateName]){

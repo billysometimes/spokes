@@ -46,11 +46,17 @@ part of spokes;
           }on NoSuchMethodError{
 
           }catch(error){
-            print(error);
+            request.response.write(error);
+            request.response.close();
           }
         }
         if(!request.response.isDone && ctrl != null){
-          ctrl(request);
+          try{
+            ctrl(request);
+          }catch(error){
+            request.response.write(error);
+            request.response.close();
+          }
         }
 
         if(ctrl == null){

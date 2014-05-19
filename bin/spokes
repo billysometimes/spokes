@@ -281,7 +281,7 @@ generateNew(results){
               }
 }
 emptyApp(appName){
-  return "library ${appName};\n\n"+
+  return "library $appName;\n\n"+
          "import '../bin/spokes.dart';\n\n"+
          "import 'dart:async';\n\n"+
          "//add models\n"+
@@ -291,8 +291,10 @@ emptyApp(appName){
 }
 
 emptyModel(appName,modelName){
-  return "part of ${appName};\n\n" +
-         "class ${modelName} extends SpokesModel {\n\n" +
+  return "part of $appName;\n\n" +
+         "class $modelName extends SpokesModel {\n"+
+         "  $modelName():super();\n"+
+         "  $modelName.from(Map json):super.from(json);\n\n" +
          "}";
 }
 

@@ -24,4 +24,7 @@ class SpokesRequest {
   HttpRequest get request => _request;
 
   HttpSession get session => _request.session;
+
+  HttpHeaders get headers => _request.headers;
+
 }

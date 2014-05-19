@@ -1,100 +1,180 @@
 part of spokes;
 class SpokesModel{
 
-  var _obj;
-  var _tbl;
+  Map _modelMap = {};
+  var id;
+  bool strict = false;
+  final Map fields = {};
+  Type _queryType;
+  var _db;
+  var use = null;
+   SpokesModel(){
+     var database = use == null ? "default" : use;
+     ClassMirror dbInstance = reflectClass(db[database]["engine"]);
+      _db = dbInstance.newInstance(new Symbol(""), [db[database]]).reflectee;
+      _db.set(reflectClass(this.runtimeType).reflectedType.toString());
+     _queryType = this.runtimeType;
 
-  SpokesModel(){
-    _tbl = db.table(reflectClass(this.runtimeType).reflectedType.toString());
-    _obj = _tbl;
+     this.fields.forEach((key,val){
+       if(val is Map){
+         if(val.containsKey("default")){
+           _modelMap[key] = val["default"];
+         }else{
+           _modelMap[key] = null;
+         }
+       }else{
+         _modelMap[key] = null;
+       }
+     });
+   }
+
+  _setField(name,tmp){
+    var assignableName = name;
+    var arg = tmp;
+    if(this.strict){
+      if(!hasField(assignableName)){
+         throw new Exception("Field $name does not exist for Model ${this.runtimeType}");
+      }
+    }
+
+    if(fields[assignableName] != null && fields[assignableName].containsKey("type")){
+
+      Type fieldType =  fields[assignableName]["type"];
+      if(arg.runtimeType == fieldType){
+         _modelMap[name] = arg;
+      }else{
+         throw new Exception("Field $assignableName requires type $fieldType but got ${arg.runtimeType}");
+      }
+    }else{
+       _modelMap[name] = arg;
+    }
   }
 
-  get(var id){
-    return _obj.get(id);
+  noSuchMethod(Invocation invocation) {
+      Symbol methodName = invocation.memberName;
+      List tmp = invocation.positionalArguments;
+
+      String name = MirrorSystem.getName(methodName);
+
+      if(name[name.length-1] == "=" ){
+        var arg = tmp.length == 1 ? tmp.first : tmp;
+        _setField(name.substring(0,name.length-1),arg);
+      }else{
+        return(_modelMap[name]);
+      }
   }
 
-  avg(var field){
-    return _obj.avg(field);
+  hasField(Object field){
+    return _modelMap.containsKey(field);
   }
 
-  concatMap(Function f){
-    return _obj.concatMap(f);
+  hasFields(List fields){
+    var returnVal=true;
+    fields.forEach((field){
+      if(!this.hasField(field))
+        returnVal= false;
+    });
+    return returnVal;
   }
 
-  forEach(Function f){
-    return _obj.forEach(f);
+  toString(){
+    return _modelMap.toString();
   }
 
-  group(var gr){
-    return _obj.group(gr);
+  call(){
+    return _modelMap;
   }
 
-  innerJoin(var a, var b){
-    return _obj.innerJoin(a,b);
+  get _conn =>  _db.connect().then((conn){return conn;});
+
+  from(Map m){
+      m.forEach((key,val){
+        _setField(key,val);
+      });
+  }
+
+  save(){
+    //TODO beforesave callbacks
+    _db.save(this());
+    return this;
+  }
+
+  destroy(){
+    _db.destroy();
+    return this;
+  }
+
+  pluck(var field){
+    _queryType = String;
+    return this;
+  }
+
+  all(){
+    _db.all();
+    _queryType = this.runtimeType;
+    return this;
+  }
+
+  find(var id){
+    _db.find(id);
+
+    _queryType = this.runtimeType;
+    return this;
+  }
+
+  findBy(Map attrs){
+    _db.findBy(attrs);
+    _queryType = this.runtimeType;
+    return this;
+  }
+
+  orderBy(var field,[var dir = "asc"]){
+    _db.orderBy(field,dir);
+    return this;
   }
 
   limit(int lim){
-    return _obj.limit(lim);
+    _db.limit(lim);
+    return this;
   }
 
-  merge(var obj){
-    return _obj.merge(obj);
+  raw(){
+    return _db.raw();
   }
 
-  orderBy(var order){
-    return _obj.orderBy(order);
-  }
+  then(Function f){
 
-  reduce(Function func){
-    return _obj.reduce(func);
-  }
-
-  skip(int index){
-    return _obj.skip(index);
-  }
-
-  sync(){
-    return _obj.sync();
-  }
-
-  update(var expr,[Map options]){
-    return _obj.update(expr,options);
-  }
-
-
-  filter(var filter){
-    return _obj.filter(filter);
-  }
-
-  between(var l, var r,[Map options]){
-    return _obj.between(l,r,options);
-  }
-
-  contains(var val){
-    return _obj.contains(val);
-  }
-
-  delete([Map options]){
-    return _obj.delete(options);
-  }
-
-  eqJoin(l,r,[Map index]){
-    return _obj.eqJoin(l,r,index);
-  }
-
-  hasFields(var fields){
-    return _obj.eqJoin(fields);
-  }
-
-  get _conn =>  db.connect(db: "test",port: 28015).then((conn){return conn;});
-
-  run(var q){
-    Completer c = new Completer();
-     _conn.then((connection){
-      _obj.run(connection).then((response){
-        c.complete(response);
+    _conn.then((connection){
+      _db.run(connection).then((response){
+        var res = [];
+        InstanceMirror im = reflect(this);
+         ClassMirror cm = im.type;
+         if(cm.reflectedType == _queryType){
+           if(response is List){
+           response.forEach((e){
+             var obj = cm.newInstance(new Symbol(""),[]).reflectee;
+             try{
+               obj.from(e);
+               res.add(obj);
+             }catch(error){
+               res = error;
+             }
+           });
+           }else{
+             var obj = cm.newInstance(new Symbol(""),[]).reflectee;
+             try{
+               obj.from(response);
+               res = obj;
+             }catch(error){
+               res = error;
+             }
+           }
+         }else{
+           res = response;
+         }
+         f(res);
       });
-    });
-     return c.future;
+  });
   }
+
 }
