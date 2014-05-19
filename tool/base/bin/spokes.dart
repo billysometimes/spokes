@@ -41,6 +41,7 @@ main(List p){
   print("starting server");
   Spokes.start(certificateName);
   Spokes.spokesOptions = spokesOptions;
+  Spokes.templatePath = templatePath;
 
 
   Stream scriptStream = scripts.watch(recursive:true);
