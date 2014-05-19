@@ -35,6 +35,7 @@ main(List<String> args){
 
   parser.addFlag("help",abbr:"h");
 
+  parser.addCommand("bundle");
 
   var results = parser.parse(args,allowTrailingOptions: true);
 
@@ -45,7 +46,9 @@ main(List<String> args){
   if(results.command != null) {
     if(results.command.name == "new")
       createNew(results);
-    else if(results.command.name == "generate" || results.command.name == "g")
+    else if(results.command.name == "bundle"){
+      bundle();
+    }else if(results.command.name == "generate" || results.command.name == "g")
       generateNew(results);
     else if(results.command.name == "destroy")
       destroyThing(results);
@@ -69,6 +72,22 @@ main(List<String> args){
       }
     }
 
+  }
+}
+
+bundle(){
+  File f = new File("pubspec.yaml");
+  if(f.existsSync()){
+    Process.run("pub",["get"]).then((result){
+      var first = "${Directory.current.path}${Platform.pathSeparator}packages";
+      var second = "${Directory.current.path}${Platform.pathSeparator}cache${Platform.pathSeparator}packages";
+      var cachePackages = new Directory(second);
+      if(new Directory(second).existsSync() == false){
+        new Link(second).createSync(first);
+        }
+     });
+  }else{
+    print("${Directory.current} is not a spokes project.");
   }
 }
 
