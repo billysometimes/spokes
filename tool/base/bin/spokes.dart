@@ -18,7 +18,7 @@ main(List p){
   //compile javascript at runtime
   List initialScripts = scripts.listSync(recursive:true);
   initialScripts.forEach((data){
-    if(data.path.indexOf(".dart") > 0 && data.path.indexOf(".js") < 0 ){
+    if(data.path.indexOf(".dart") > 0 && data.path.indexOf(".js") < 0 && data.path.indexOf("packages") < 0){
       print("compiling for ${data.path}");
       //recompile
       Process.run(spokesOptions["dart2js"], ["-o",data.path+".js",data.path]).then((result){
