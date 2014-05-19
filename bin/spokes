@@ -293,8 +293,6 @@ emptyApp(appName){
 emptyModel(appName,modelName){
   return "part of $appName;\n\n" +
          "class $modelName extends SpokesModel {\n"+
-         "  $modelName():super();\n"+
-         "  $modelName.from(Map json):super.from(json);\n\n" +
          "}";
 }
 
