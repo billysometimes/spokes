@@ -5,12 +5,22 @@ part of spokes;
     manage(SpokesRequest request){
       var served = _tryAndServe(request);
       Function ctrl;
+      Function done;
+      Function connected;
+      Function data;
+
+      String onConnect;
+      String onDone;
+      String onData;
+      StreamController ws;
       var d;
       if(!served){
         this.urls.forEach((k,Map<String,Object>v){
           bool match = _matches(k,request);
           if(match){
+
             Object cls = v["controller"];
+
             ClassMirror cm = reflectClass(cls);
             var ncm = cm.newInstance(new Symbol(""),[]);
 
@@ -35,7 +45,27 @@ part of spokes;
 
             }
 
-            ctrl = ncm.getField(new Symbol(v["action"])).reflectee;
+            if(WebSocketTransformer.isUpgradeRequest(request.request)){
+              ws = v["ws"];
+              onDone = v["onDone"];
+              onConnect = v["onConnect"];
+              onData = v["onData"];
+
+              if(onDone != null){
+                done = ncm.getField(new Symbol(onDone)).reflectee;
+              }
+              if(onConnect != null){
+                connected = ncm.getField(new Symbol(onConnect)).reflectee;
+              }
+              if(onData != null){
+                data = ncm.getField(new Symbol(onData)).reflectee;
+              }
+            }else{
+              if(cls != null){
+                ctrl = ncm.getField(new Symbol(v["action"])).reflectee;
+              }
+            }
+
           }
         });
 
@@ -50,12 +80,29 @@ part of spokes;
             request.response.close();
           }
         }
-        if(!request.response.isDone && ctrl != null){
+        if(!request.response.isDone){
+          if(WebSocketTransformer.isUpgradeRequest(request.request)){
+            if(ws == null){
+              ws = new StreamController();
+            }
+            WebSocketTransformer.upgrade(request.request).then((WebSocket socket) {
+                     ws.stream.pipe(socket);
+                     ws.sink.add(connected(request));
+                     socket.listen((var msg) {
+                       ws.sink.add(data(request,msg));
+                     });
+
+                     socket.done.then((_){
+                       ws.sink.add(done(request));
+                     });
+                   });
+          }else{
           try{
             ctrl(request);
           }catch(error){
             request.response.write(error);
             request.response.close();
+          }
           }
         }
 

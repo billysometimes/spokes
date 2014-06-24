@@ -143,7 +143,6 @@ class SpokesModel{
   }
 
   then(Function f){
-
     _conn.then((connection){
       _db.run(connection).then((response){
         var res = [];
@@ -160,7 +159,9 @@ class SpokesModel{
                res = error;
              }
            });
-           }else{
+           f(res);
+
+           }else if(response is Map){
              var obj = cm.newInstance(new Symbol(""),[]).reflectee;
              try{
                obj.from(response);
@@ -168,11 +169,32 @@ class SpokesModel{
              }catch(error){
                res = error;
              }
+             f(res);
+
+           }else{
+
+             //we got a cursor
+
+             response.toArray().then((ar){
+
+               ar.forEach((e){
+
+               var obj = cm.newInstance(new Symbol(""),[]).reflectee;
+               try{
+                 obj.from(e);
+                   res.add(obj);
+                 }catch(error){
+                   res = error;
+               }
+               });
+               f(res);
+             });
            }
          }else{
            res = response;
+           f(res);
+
          }
-         f(res);
       });
   });
   }
