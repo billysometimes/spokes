@@ -128,6 +128,13 @@ class SpokesModel{
     return this;
   }
 
+  findFirstBy(Map attrs){
+    _db.findFirstBy(attrs);
+    _queryType = this.runtimeType;
+
+    return this;
+  }
+
   orderBy(var field,[var dir = "asc"]){
     _db.orderBy(field,dir);
     return this;
@@ -163,12 +170,14 @@ class SpokesModel{
 
            }else if(response is Map){
              var obj = cm.newInstance(new Symbol(""),[]).reflectee;
+
              try{
                obj.from(response);
                res = obj;
              }catch(error){
                res = error;
              }
+
              f(res);
 
            }else{
@@ -195,6 +204,9 @@ class SpokesModel{
            f(res);
 
          }
+      }).catchError((Exception e){
+        print("${e.runtimeType}: ${e.message}");
+        f(null);
       });
   });
   }

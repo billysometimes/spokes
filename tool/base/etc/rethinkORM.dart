@@ -38,6 +38,10 @@ class RethinkORM {
     _query = _query.filter(attrs);
   }
 
+  findFirstBy(Map attrs){
+    _query = _query.filter(attrs).nth(0);
+  }
+
   limit(int lim){
     _query = _query.limit(lim);
   }
@@ -71,6 +75,8 @@ class RethinkORM {
     Completer c = new Completer();
     _query.run(connection).then((res){
       c.complete(res);
+    }).catchError((e){
+      c.completeError(e);
     });
     return c.future;
   }
