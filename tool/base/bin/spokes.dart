@@ -3,15 +3,13 @@ import 'package:spokes/spokes.dart' as Spokes;
 export 'package:spokes/spokes.dart'show SpokesModel, SpokesController, SpokesRoutes, SpokesUrl, SpokesRequest, Field;
 
 import 'dart:io';
-export 'dart:io';
+
 import 'dart:async';
 import '../settings.dart';
 
 main(List p){
-  int port = 3000;
-  if(p.isNotEmpty){
-    port = int.parse(p[0]);
-  }
+  Spokes.port = int.parse(p[0]);
+  Spokes.host = p[1];
 
   Directory scripts = new Directory(PUBLIC_PATH);
 

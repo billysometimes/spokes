@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
 import 'dart:mirrors';
+
 part 'src/spokesServer.dart';
 part 'src/spokesController.dart';
 part 'src/spokesRoutes.dart';
@@ -21,12 +22,13 @@ part 'src/field.dart';
   SpokesRoutes router;
   Map spokesOptions;
   int port;
+  String host;
   var db;
   String templatePath;
   SpokesServer _server;
 
   start([String certificateName]){
-    _server = new SpokesServer(null,port);
+    _server = new SpokesServer(host,port);
     if(certificateName == null)
       return _server._start();
     else

@@ -12,7 +12,7 @@ class SpokesModel{
      var database = use == null ? "default" : use;
      ClassMirror dbInstance = reflectClass(db[database]["engine"]);
       _db = dbInstance.newInstance(new Symbol(""), [db[database]]).reflectee;
-      _db.set(reflectClass(this.runtimeType).reflectedType.toString());
+      _db.set(reflectClass(this.runtimeType).reflectedType.toString()+"s");
      _queryType = this.runtimeType;
 
      this.fields.forEach((key,val){
@@ -36,7 +36,6 @@ class SpokesModel{
          throw new Exception("Field $name does not exist for Model ${this.runtimeType}");
       }
     }
-
     if(fields[assignableName] != null && fields[assignableName].containsKey("type")){
 
       Type fieldType =  fields[assignableName]["type"];
@@ -166,6 +165,7 @@ class SpokesModel{
                res = error;
              }
            });
+           res = res.length == 1 ? res[0] : res;
            f(res);
 
            }else if(response is Map){
@@ -205,7 +205,7 @@ class SpokesModel{
 
          }
       }).catchError((Exception e){
-        print("${e.runtimeType}: ${e.message}");
+        print("${e.runtimeType}: $e");
         f(null);
       });
   });

@@ -11,7 +11,8 @@ main(List<String> args){
 
   ArgParser spin = new ArgParser();
   spin.addOption("port",abbr:"p",defaultsTo:"3000");
-
+  spin.addOption("host",abbr:"h",defaultsTo:"localhost");
+  
   ArgParser newApp = new ArgParser();
   newApp.addOption("path",abbr:"p");
 
@@ -57,8 +58,8 @@ main(List<String> args){
       if(!startFile.existsSync()){
         print("${startFile.path} does not exist.");
       }else{
-        print("Starting on port ${results.command["port"]}");
-        Process.start("dart",[startFile.path,results.command["port"]]).then((process) {
+        print("Starting on ${results.command["host"]}:${results.command["port"]}");
+        Process.start("dart",[startFile.path,results.command["port"],results.command["host"]]).then((process) {
           process.stdout.transform(new Utf8Decoder())
                         .transform(new LineSplitter())
                         .listen((String line) => print(line));
