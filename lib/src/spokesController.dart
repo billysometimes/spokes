@@ -16,10 +16,12 @@ class SpokesController{
   static final _PNG  = "image/png";
   static final _ICO  = "image/x-icon";
   static final _TTF  = "application/x-font-ttf";
+  static final _MAP  = "application/json";
 
 
   /**Extensions**/
   static final _extensions = <String, ContentType>{
+     'map': _MAP,
      'css': _CSS,
      'dart': _DART,
      'html': _HTML,
@@ -125,6 +127,7 @@ class SpokesController{
   }
 
   serve(SpokesRequest request,String fileName){
+
     var path =fileName;
 
     request.renderFunction = new File(path).openRead().pipe;
@@ -155,7 +158,11 @@ class SpokesController{
   }
 
   sendJSON(SpokesRequest request,var jsonData){
-    request.response..headers.set(HttpHeaders.CONTENT_TYPE, _extensions["json"]);
+    if(jsonData is SpokesModel){
+      jsonData = jsonData();
+    }
+    request.response..headers.set(HttpHeaders.CONTENT_TYPE, _extensions["json"]+";charset=UTF-8");
+
     request.response..headers..write(JSON.encode(jsonData));
 
     for(final e in middleWares){

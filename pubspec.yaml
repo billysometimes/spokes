@@ -1,5 +1,5 @@
 name: spokes
-version: 0.2.0
+version: 0.3.0
 author: Billy Welch <billywelch@gmail.com>
 description: A Django-inspired framework
 homepage: https://github.com/billysometimes/spokes
