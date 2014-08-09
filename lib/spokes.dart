@@ -12,7 +12,6 @@ part 'src/spokesModel.dart';
 part 'src/spokesUrl.dart';
 part 'src/spokesRequest.dart';
 part 'src/spokesResponse.dart';
-part 'src/field.dart';
 
   List middleWares;
   String BASE_PATH;

@@ -4,19 +4,19 @@ class SpokesController{
 
 
   /**Content Types**/
-  static final _HTML = "text/html; charset=UTF-8";
+  static final _HTML = ContentType.HTML;
 
-  static final _CSS = "text/css";
-  static final _DART = "application/dart";
-  static final _JAVASCRIPT = "application/javascript";
-  static final _JPEG = "image/jpeg";
-  static final _JSON = "application/json";
-  static final _TEXT = "text/plain";
-  static final _SVG  = "image/svg+xml";
-  static final _PNG  = "image/png";
-  static final _ICO  = "image/x-icon";
-  static final _TTF  = "application/x-font-ttf";
-  static final _MAP  = "application/json";
+  static final _CSS = new ContentType("text","css", charset: "utf-8");
+  static final _DART = new ContentType("application","dart");
+  static final _JAVASCRIPT = new ContentType("application","javascript");
+  static final _JPEG = new ContentType("image","jpeg");
+  static final _JSON = ContentType.JSON;
+  static final _TEXT = ContentType.TEXT;
+  static final _SVG  = new ContentType("image","svg+xml");
+  static final _PNG  = new ContentType("image","png");
+  static final _ICO  = new ContentType("image","x-icon");
+  static final _TTF  = new ContentType("application","x-font-ttf");
+  static final _MAP  = ContentType.JSON;
 
 
   /**Extensions**/
@@ -161,7 +161,7 @@ class SpokesController{
     if(jsonData is SpokesModel){
       jsonData = jsonData();
     }
-    request.response..headers.set(HttpHeaders.CONTENT_TYPE, _extensions["json"]+";charset=UTF-8");
+    request.response.headers.contentType = _extensions["json"];
 
     request.response..headers..write(JSON.encode(jsonData));
 
@@ -189,7 +189,7 @@ class SpokesController{
       extension = extension.substring(0,extension.indexOf("."));
     }
 
-      req.response.headers.set(HttpHeaders.CONTENT_TYPE, _extensions[extension]);
+      req.response.headers.contentType = _extensions[extension];
 
   }
 }
