@@ -42,40 +42,52 @@ main(List<String> args){
 
   if(results["version"]){
     print(VersionInfo.version);
-  }
-
-  if(results.command != null) {
-    if(results.command.name == "new")
-      createNew(results);
-    else if(results.command.name == "bundle"){
-      bundle();
-    }else if(results.command.name == "generate" || results.command.name == "g")
-      generateNew(results);
-    else if(results.command.name == "destroy")
-      destroyThing(results);
-    else if(results.command.name == "spin"){
-      File startFile = new File(Directory.current.path+Platform.pathSeparator+"bin"+Platform.pathSeparator+"spokes.dart");
-      if(!startFile.existsSync()){
-        print("${startFile.path} does not exist.");
-      }else{
-        print("Starting on ${results.command["host"]}:${results.command["port"]}");
-        Process.start("dart",[startFile.path,results.command["port"],results.command["host"]]).then((process) {
-          process.stdout.transform(new Utf8Decoder())
-                        .transform(new LineSplitter())
-                        .listen((String line) => print(line));
-          process.stderr.transform(new Utf8Decoder())
-                        .transform(new LineSplitter())
-                        .listen((String line) => print(line));
-          process.exitCode.then((exitCode) {
-            print('exit code: $exitCode');
-          });
-        });
-      }
+  }else if(results.command != null) {
+    
+    switch(results.command.name){
+      case "new":
+        createNew(results);
+        break;
+      case "bundle":
+        bundle();
+        break;
+      case "generate":
+        generateNew(results);
+        break;
+      case "g":
+        generateNew(results);
+        break;
+      case "destroy":
+        destroyThing(results);
+        break;
+      case "spin":
+        startServer(results);
+        break;
+      default:
+        print("Unknown command ${results.command.name}");
     }
-
   }
 }
 
+startServer(results){
+  File startFile = new File(Directory.current.path+Platform.pathSeparator+"bin"+Platform.pathSeparator+"spokes.dart");
+  if(!startFile.existsSync()){
+    print("${startFile.path} does not exist.");
+  }else{
+    print("Starting on ${results.command["host"]}:${results.command["port"]}");
+    Process.start("dart",[startFile.path,results.command["port"],results.command["host"]]).then((process) {
+      process.stdout.transform(new Utf8Decoder())
+                    .transform(new LineSplitter())
+                    .listen((String line) => print(line));
+      process.stderr.transform(new Utf8Decoder())
+                    .transform(new LineSplitter())
+                    .listen((String line) => print(line));
+      process.exitCode.then((exitCode) {
+        print('exit code: $exitCode');
+      });
+    });
+  }
+}
 bundle(){
   File f = new File("pubspec.yaml");
   if(f.existsSync()){
