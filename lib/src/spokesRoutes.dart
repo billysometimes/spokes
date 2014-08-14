@@ -25,7 +25,7 @@ class SpokesRoutes{
         else{
           if(cls != null)
             ctrl = ncm.getField(new Symbol(match["action"])).reflectee;
-          _runMiddlewares(request);
+          _runMiddlewares(request,ctrl);
           if(!request.response.isDone){
             try{
               ctrl(request);
@@ -87,9 +87,7 @@ class SpokesRoutes{
         
     if(onData != null)
       data = ncm.getField(new Symbol(onData)).reflectee;
-    
-    _runMiddlewares(request);
-    
+        
     WebSocketTransformer.upgrade(request.request).then((WebSocket socket) {
       ws.stream.pipe(socket);
       ws.sink.add(connected(request));
@@ -104,7 +102,7 @@ class SpokesRoutes{
     
   }
   
-  void _runMiddlewares(request){
+  void _runMiddlewares(request,ctrl){
     for(final e in middleWares){
       try{
         if(!request.response.isDone)
