@@ -1,0 +1,8 @@
+name: spokes
+version: 0.3.0
+author: Billy Welch <billywelch@gmail.com>
+description: A Django-inspired framework
+homepage: https://github.com/billysometimes/spokes
+documentation: https://github.com/billysometimes/spokes/wiki
+dependencies:
+  args: any

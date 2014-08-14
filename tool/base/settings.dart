@@ -9,8 +9,6 @@ import 'bin/spokes.dart';
 
 //add middlewares here
 import 'middleware/Logging.dart';
-import 'middleware/SpokesFilters.dart';
-
 
 //add your database
 import 'etc/rethinkORM.dart';
@@ -32,7 +30,7 @@ part 'routes.dart';
     String PUBLIC_PATH = BASE_PATH + "/web";
 
     //middlewares
-    List middleWares = [new SpokesLogger(spokesOptions["env"]), new SpokesFilters()];
+    List middleWares = [new SpokesLogger(spokesOptions["env"])];
 
     var templateEngine = new Lug(_templateOptions);
 

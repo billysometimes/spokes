@@ -8,13 +8,18 @@ class SpokesModel{
   Type _queryType;
   var _db;
   var use = null;
+  
    SpokesModel(){
+     //select the database
      var database = use == null ? "default" : use;
+     
+     //get instance of database
      ClassMirror dbInstance = reflectClass(db[database]["engine"]);
       _db = dbInstance.newInstance(new Symbol(""), [db[database]]).reflectee;
       _db.set(reflectClass(this.runtimeType).reflectedType.toString()+"s");
      _queryType = this.runtimeType;
 
+     //populate the model map
      this.fields.forEach((key,val){
        if(val is Map){
          if(val.containsKey("default")){

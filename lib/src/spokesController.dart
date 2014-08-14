@@ -36,10 +36,6 @@ class SpokesController{
 
    };
 
-  List beforeFilters;
-
-  List afterFilters;
-
   render(SpokesRequest request, [Map params,String template]){
 
     var path = request.uri.path;

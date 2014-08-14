@@ -3,19 +3,14 @@ part of spokes;
 class SpokesRoutes{
 
   manage(SpokesRequest request){
+    
+    //try to serve static file if it exists
     var served = _tryAndServe(request);
     
     Function ctrl;
-    Function done;
-    Function connected;
-    Function data;
-    
-    String onConnect;
-    String onDone;
-    String onData;
-    StreamController ws;
       
     if(!served){
+      //find a matching URL
       Map match = _matches(urls,request);
 
       if(match != null){
@@ -25,88 +20,26 @@ class SpokesRoutes{
         ClassMirror cm = reflectClass(cls);
         var ncm = cm.newInstance(new Symbol(""),[]);
 
-        List beforeFilters = ncm.getField(new Symbol("beforeFilters")).reflectee;
-
-        if(beforeFilters != null){
-          beforeFilters.forEach((Map filter){
-            if(filter["only"] == null || filter["only"].contains(match["action"])){
-              request.beforeFilters.add(filter["action"]);
-            }
-          });
-        }
-
-        List afterFilters = ncm.getField(new Symbol("afterFilters")).reflectee;
-
-        if(afterFilters != null){
-          afterFilters.forEach((Map filter){
-            if(filter["only"] == null || filter["only"].contains(match["action"])){
-              request.afterFilters.add(filter["action"]);
-            }
-          });
-
-        }
-
-        if(WebSocketTransformer.isUpgradeRequest(request.request)){
-          ws = match["ws"];
-            onDone = match["onDone"];
-            onConnect = match["onConnect"];
-            onData = match["onData"];
-
-            if(onDone != null)
-              done = ncm.getField(new Symbol(onDone)).reflectee;
-            
-            if(onConnect != null)
-              connected = ncm.getField(new Symbol(onConnect)).reflectee;
-              
-            if(onData != null)
-              data = ncm.getField(new Symbol(onData)).reflectee;
-              
-        }else{
+        if(WebSocketTransformer.isUpgradeRequest(request.request))
+          _handleWebsocket(request,ncm,match);
+        else{
           if(cls != null)
             ctrl = ncm.getField(new Symbol(match["action"])).reflectee;
-              
-        }
-
-      }
-
-      for(final e in middleWares){
-        try{
-          if(!request.response.isDone)
-            e.processController(request,ctrl);
-        }on NoSuchMethodError{
-          request.response.write("No method matching");
-          request.response.close();
-        }catch(error){
-          request.response.write(error);
-          request.response.close();
-        }
-      }
-          
-      if(!request.response.isDone){
-        if(WebSocketTransformer.isUpgradeRequest(request.request)){
-          if(ws == null)
-            ws = new StreamController();
-            
-          WebSocketTransformer.upgrade(request.request).then((WebSocket socket) {
-            ws.stream.pipe(socket);
-            ws.sink.add(connected(request));
-            socket.listen((var msg) {
-              ws.sink.add(data(request,msg));
-            });
-
-            socket.done.then((_){
-              ws.sink.add(done(request));
-            });
-          });
-        }else{
-          try{
-            ctrl(request);
-          }catch(error){
-            request.response.write(error);
-            request.response.close();
+          _runMiddlewares(request);
+          if(!request.response.isDone){
+            try{
+              ctrl(request);
+            }catch(error){
+              request.response.write(error);
+              request.response.close();
+            }
           }
         }
+      }else{
+        //File does not exist and no route exists
+        new SpokesController().redirect(request,"404.html");
       }
+
     }
 
   }
@@ -115,7 +48,6 @@ class SpokesRoutes{
 
   bool _tryAndServe(SpokesRequest request){
     var path = _fixUri(request);
-
     if(new File(path).existsSync()){
       new SpokesController().serve(request, path);
       return true;
@@ -136,6 +68,56 @@ class SpokesRoutes{
     return builtPath.isNotEmpty ? builtPath.join(Platform.pathSeparator) : "";
   }
 
+  void _handleWebsocket(request,ncm,match){
+   
+    Function done;
+    Function connected;
+    Function data;
+    
+    StreamController ws = match["ws"] == null ? new StreamController() : match["ws"];
+    String onDone = match["onDone"];
+    String onConnect = match["onConnect"];
+    String onData = match["onData"];
+
+    if(onDone != null)
+      done = ncm.getField(new Symbol(onDone)).reflectee;
+      
+    if(onConnect != null)
+      connected = ncm.getField(new Symbol(onConnect)).reflectee;
+        
+    if(onData != null)
+      data = ncm.getField(new Symbol(onData)).reflectee;
+    
+    _runMiddlewares(request);
+    
+    WebSocketTransformer.upgrade(request.request).then((WebSocket socket) {
+      ws.stream.pipe(socket);
+      ws.sink.add(connected(request));
+      socket.listen((var msg) {
+        ws.sink.add(data(request,msg));
+      });
+
+      socket.done.then((_){
+        ws.sink.add(done(request));
+      });
+    });
+    
+  }
+  
+  void _runMiddlewares(request){
+    for(final e in middleWares){
+      try{
+        if(!request.response.isDone)
+          e.processController(request,ctrl);
+      }on NoSuchMethodError{
+
+      }catch(error){
+        request.response.write(error);
+        request.response.close();
+      }
+    }
+  }
+  
   Map _matches(Map urls, SpokesRequest req){
     Map params = {};
     List reqUrl = req.request.uri.pathSegments;
@@ -173,5 +155,5 @@ class SpokesRoutes{
     }
   }
   
-
+  
 
