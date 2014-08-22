@@ -1,31 +1,37 @@
 part of spokes;
 
 class SpokesRoutes{
-
+  RouteTrie routes = new RouteTrie();
+  
   manage(SpokesRequest request){
     
     //try to serve static file if it exists
     var served = _tryAndServe(request);
-    
-    Function ctrl;
-      
+          
     if(!served){
+      
       //find a matching URL
-      Map match = _matches(urls,request);
+      Map match = routes.matchRoute(request.uri.path, request);
 
       if(match != null){
+        Function ctrl;
   
         Object cls = match["controller"];
 
+        //create a new instance of the class that matches our controller
         ClassMirror cm = reflectClass(cls);
         var ncm = cm.newInstance(new Symbol(""),[]);
 
+        //check if it is a websocket upgrade request
         if(WebSocketTransformer.isUpgradeRequest(request.request))
           _handleWebsocket(request,ncm,match);
         else{
+          //handle http request
           if(cls != null)
             ctrl = ncm.getField(new Symbol(match["action"])).reflectee;
+          
           _runMiddlewares(request,ctrl);
+          
           if(!request.response.isDone){
             try{
               ctrl(request);
@@ -37,7 +43,7 @@ class SpokesRoutes{
         }
       }else{
         //File does not exist and no route exists
-        new SpokesController().redirect(request,"404.html");
+        new SpokesController().serve(request,PUBLIC_PATH+"/404.html");
       }
 
     }
@@ -116,42 +122,83 @@ class SpokesRoutes{
     }
   }
   
-  Map _matches(Map urls, SpokesRequest req){
-    Map params = {};
-    List reqUrl = req.request.uri.pathSegments;
-    var ctrlClass = null;
-    bool match = true;
-    
-    for(final k in urls.keys){
-      var v = urls[k]; 
-      List url = new List.from(k.uri.pathSegments);
-      if(k.methods.contains(req.method) && url.length == reqUrl.length){
-        for(var i=0;i<reqUrl.length;i++){
-              
-          //add params from URL to request params
-          if(url[i].startsWith(":")){
-            params[url[i].replaceAll(":", "")] =reqUrl[i];
-            url.removeAt(i);
-          }else if(url[i] != reqUrl[i]){
-            match = false;
-          }
-              
-        }
-      }else{
-        match = false;
-      }
-        
-      if(match){
-        req.params.addAll(params);
-        req.setUri(url.join("/"));
-        return v;
-      }else{
-          match = true;
-        }
-      }
-      return null;
-    }
+  _init(){
+    this.routes.addRoutes(this.urls);
+  }
+}
+  
+class RouteTrie {
+  RouteNode _root;
+  
+  RouteTrie(){
+    _root = new RouteNode();
+  }
+  addRoutes(Map routes){
+    routes.forEach((SpokesUrl path,Map action){
+      _root._addRoute(path.uri.path,action,path.methods);
+      
+    });
   }
   
+  matchRoute(String route,SpokesRequest req){
+    return _root._match(route,req);
+  }
+}
+
+class RouteNode {
+  Map val;
+  String param;
+  Map<String,RouteNode> children;
+  List methods;
   
+  RouteNode(){
+    children = new Map();
+  }
+ 
+  _match(String route,SpokesRequest req){
+    if(this.param != null){
+      req.params[param] = new RegExp(r"(\w+)").stringMatch(route);
+      req.setUri(req.uri.path.replaceFirst("/"+req.params[param], ""));
+      route = route.substring(req.params[param].length);      
+    }
+
+    if(route.length > 0 && this.children[route[0]] != null){
+      return this.children[route[0]]._match(route.substring(1),req);
+    }
+    else if(this.methods == null || !this.methods.contains(req.method)){
+      return null;
+    }
+    else{
+      return this.val;
+    }
+    
+  }
+  
+  _addRoute(String path, Map action,List methods){
+  
+     String token = path[0];
+     String remaining = path.substring(1);
+     var nextNode;
+     
+     if(token == ":"){
+         this.param = new RegExp(r"(\w+)").stringMatch(remaining);
+         remaining = remaining.substring(this.param.length);
+         if(remaining.length > 0){
+           token = remaining[0];
+           remaining = remaining.substring(1);
+         }
+     }
+     if(remaining.length > 0){
+       if(children[token] == null){
+         children[token] = new RouteNode();
+       }
+       children[token]._addRoute(remaining,action,methods);
+     }else{
+       this.val = action;
+       this.methods = methods;
+     }
+     
+     
+  }
+}
 

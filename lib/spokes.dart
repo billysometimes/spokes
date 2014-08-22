@@ -27,6 +27,7 @@ part 'src/spokesResponse.dart';
   SpokesServer _server;
 
   start([String certificateName]){
+    router._init();
     _server = new SpokesServer(host,port);
     if(certificateName == null)
       return _server._start();

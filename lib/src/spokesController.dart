@@ -39,10 +39,7 @@ class SpokesController{
   render(SpokesRequest request, [Map params,String template]){
 
     var path = request.uri.path;
-    if(template != null){
-      path = template;
-      template = templatePath+Platform.pathSeparator+template;
-    }else{
+    if(template == null){
       template = templatePath+Platform.pathSeparator+path;
     }
     if(template.indexOf(".") < 0){
@@ -123,7 +120,6 @@ class SpokesController{
   }
 
   serve(SpokesRequest request,String fileName){
-
     var path =fileName;
 
     request.renderFunction = new File(path).openRead().pipe;
