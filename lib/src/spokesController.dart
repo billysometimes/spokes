@@ -41,6 +41,10 @@ class SpokesController{
     var path = request.uri.path;
     if(template == null){
       template = templatePath+Platform.pathSeparator+path;
+    }else{
+      if(new File(template).existsSync() == false){
+        template = templatePath+Platform.pathSeparator+template;
+      }
     }
     if(template.indexOf(".") < 0){
       template += ".html.lug";

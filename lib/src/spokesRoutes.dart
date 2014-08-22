@@ -124,6 +124,7 @@ class SpokesRoutes{
   
   _init(){
     this.routes.addRoutes(this.urls);
+    routes.toString();
   }
 }
   
@@ -143,62 +144,79 @@ class RouteTrie {
   matchRoute(String route,SpokesRequest req){
     return _root._match(route,req);
   }
+
 }
 
 class RouteNode {
-  Map val;
-  String param;
+  Map route;
+  RouteNode param;
+  String paramName;
   Map<String,RouteNode> children;
   List methods;
   
   RouteNode(){
-    children = new Map();
+  
   }
- 
+  
+  
   _match(String route,SpokesRequest req){
+    var val;
     if(this.param != null){
-      req.params[param] = new RegExp(r"(\w+)").stringMatch(route);
-      req.setUri(req.uri.path.replaceFirst("/"+req.params[param], ""));
-      route = route.substring(req.params[param].length);      
+      var p = new RegExp(r"(\w+)").stringMatch(route);
+      if(p==null)
+        p = "";
+      
+      req.setUri(req.uri.path.replaceFirst("/"+p, ""));
+
+      val = this.param._match(route.substring(p.length), req);
+      if(val != null){
+        req.params[paramName] = new RegExp(r"(\w+)").stringMatch(route);
+      }
+    }
+    
+    if(route != null && route.length > 0 && this.children != null && this.children[route[0]] != null && val == null){
+      return this.children[route[0]]._match(route.substring(1),req);
+    }else if(this.route != null && this.methods.contains(req.method) && route.length == 0){
+      return this.route;
+    }else{
+      return val;
     }
 
-    if(route.length > 0 && this.children[route[0]] != null){
-      return this.children[route[0]]._match(route.substring(1),req);
-    }
-    else if(this.methods == null || !this.methods.contains(req.method)){
-      return null;
-    }
-    else{
-      return this.val;
-    }
     
   }
   
-  _addRoute(String path, Map action,List methods){
-  
-     String token = path[0];
-     String remaining = path.substring(1);
-     var nextNode;
-     
-     if(token == ":"){
-         this.param = new RegExp(r"(\w+)").stringMatch(remaining);
-         remaining = remaining.substring(this.param.length);
-         if(remaining.length > 0){
-           token = remaining[0];
-           remaining = remaining.substring(1);
-         }
-     }
-     if(remaining.length > 0){
-       if(children[token] == null){
-         children[token] = new RouteNode();
-       }
-       children[token]._addRoute(remaining,action,methods);
-     }else{
-       this.val = action;
-       this.methods = methods;
-     }
-     
-     
+  _addRoute(String path, Map action,List methods){    
+    if(path.length == 0){
+        this.route = action;
+        this.methods = methods;
+      }
+
+      var token = path[0];
+      var remaining = path.substring(1);
+      var next;
+
+      if(token[0] == ':'){
+
+        var name = new RegExp(r"(\w+)").stringMatch(remaining);
+        remaining = remaining.substring(name.length);
+      
+        if(this.param == null){
+          this.param = new RouteNode();
+          this.paramName = name;
+        }
+        next = this.param;
+      }else{
+
+        if(this.children == null)
+          this.children = new Map<String,RouteNode>();
+        
+        if(this.children[token] == null)
+          this.children[token] = new RouteNode();
+        
+        next = this.children[token];
+      }
+
+      next._addRoute(remaining, action,methods);
   }
 }
 
