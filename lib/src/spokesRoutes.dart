@@ -52,7 +52,7 @@ class SpokesRoutes{
         }
       }else{
         //File does not exist and no route exists
-        new SpokesController().serve(request,PUBLIC_PATH+"/404.html");
+        new SpokesController().serve(request,"web/404.html");
       }
 
     }
