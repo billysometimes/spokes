@@ -2,6 +2,10 @@ part of spokes;
 
 class SpokesResponse implements IOSink{
   HttpResponse _response;
+  
+  /**
+   * Returns true if the response has been closed.
+   */
   bool isDone = false;
   Encoding encoding;
 
@@ -18,6 +22,9 @@ class SpokesResponse implements IOSink{
     _response.write(obj);
   }
 
+  /**
+   * Returns the headers associated with the response.
+   */
   get headers => _response.headers;
 
   flush() => _response.flush;
@@ -28,6 +35,9 @@ class SpokesResponse implements IOSink{
 
   get done => _response.done;
 
+  /**
+   * Sets the status code of the response.
+   */
   set statusCode(code) => _response.statusCode = code;
 
   writeln([Object obj])=>_response.writeln(obj);

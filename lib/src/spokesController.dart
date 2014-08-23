@@ -1,3 +1,7 @@
+/**
+ * A class that defines the methods necessary to send data to a client.
+ */
+
 part of spokes;
 
 class SpokesController{
@@ -36,7 +40,11 @@ class SpokesController{
 
    };
 
-  render(SpokesRequest request, [Map params,String template]){
+  /**
+   * Renders a template.  If no template is specified, it is assumed that the
+   * template matches the request path.
+   */
+  void render(SpokesRequest request, [Map params,String template]){
 
     var path = request.uri.path;
     if(template == null){
@@ -123,7 +131,10 @@ class SpokesController{
     }
   }
 
-  serve(SpokesRequest request,String fileName){
+  /**
+   * serves the file specified in the fileName parameter.
+   */
+  void serve(SpokesRequest request,String fileName){
     var path =fileName;
 
     request.renderFunction = new File(path).openRead().pipe;
@@ -147,13 +158,19 @@ class SpokesController{
     });
   }
 
-  redirect(SpokesRequest req,String location,{statusCode: HttpStatus.TEMPORARY_REDIRECT}){
+  /**
+   * redirects the request to a different location.  The default status code is a 307 TEMPORARY REDIRECT.
+   */
+  void redirect(SpokesRequest req,String location,{statusCode: HttpStatus.TEMPORARY_REDIRECT}){
     req.response.headers.set(HttpHeaders.LOCATION,location);
     req.response.statusCode = statusCode;
     req.response.close();
   }
 
-  sendJSON(SpokesRequest request,var jsonData){
+  /**
+   * Sends a JSON response to the client.
+   */
+  void sendJSON(SpokesRequest request,var jsonData){
     if(jsonData is SpokesModel){
       jsonData = jsonData();
     }
@@ -176,6 +193,7 @@ class SpokesController{
         request.response.close();
       }
     }
+  
   _setContentType(req,String path){
     var extension = "html";
     if(path.lastIndexOf(".") > 0){

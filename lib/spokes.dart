@@ -1,3 +1,8 @@
+
+/**
+ * The Spokes Library, providing a server, router, controller, and model
+ */
+
 library spokes;
 
 import 'dart:io';
@@ -12,20 +17,79 @@ part 'src/spokesModel.dart';
 part 'src/spokesUrl.dart';
 part 'src/spokesRequest.dart';
 part 'src/spokesResponse.dart';
+part 'src/spokesResource.dart';
 
+
+  /**
+   * A list of middleware classes
+   *
+   * These will be run several times throughout a requests life
+   */
   List middleWares;
+  
+  
+  /**
+   * Defines the root of the application
+   */  
   String BASE_PATH;
+  
+  /**
+   *Options to be passed to the template library 
+   */
   Map templateOptions;
+  
+  /**
+   *The path to the public directory where static assets can be stored.
+   */
   String PUBLIC_PATH;
+  
+  /**
+   * The template engine to be used.  
+   * 
+   * Currently only lug is supported.
+   */
   var templateEngine;
+  
+  /**
+   * Provides the routes
+   */
   SpokesRoutes router;
+  
+  /**
+   * Provides general options to the framework 
+   */
   Map spokesOptions;
+  
+  /**
+   * The port the server will run on.  Default is 3000
+   */
   int port;
+  
+  /**
+   * The host address.  Defaults to localhost.
+   */
   String host;
+  
+  /**
+   * Database configuration map.  
+   */
   var db;
+  
+  /**
+   * Path where html templates are stored.  Default is /templates
+   */
   String templatePath;
+  
+  /**
+   * The application server.
+   */
   SpokesServer _server;
 
+  
+  /**
+   * Starts the server.  A certificate may be passed if 
+   * the server uses a secure socket.
+   */
   start([String certificateName]){
     router._init();
     _server = new SpokesServer(host,port);

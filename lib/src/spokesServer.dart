@@ -1,3 +1,6 @@
+/**
+ * The server class for the spokes framework.
+ */
 part of spokes;
 
 class SpokesServer{

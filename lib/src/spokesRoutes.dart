@@ -1,8 +1,17 @@
 part of spokes;
 
 class SpokesRoutes{
-  RouteTrie routes = new RouteTrie();
+  _RouteTrie _routes = new _RouteTrie();
   
+  /**
+   * Attempts to fulfill a request.  
+   * 
+   * First it attempts to serve a file if one matching the request path exists.
+   * 
+   * If there is no static file, a route is matched.
+   * 
+   * If no routes match, a 404 is returned.
+   */
   manage(SpokesRequest request){
     
     //try to serve static file if it exists
@@ -11,7 +20,7 @@ class SpokesRoutes{
     if(!served){
       
       //find a matching URL
-      Map match = routes.matchRoute(request.uri.path, request);
+      Map match = _routes._matchRoute(request.uri.path, request);
 
       if(match != null){
         Function ctrl;
@@ -50,7 +59,10 @@ class SpokesRoutes{
 
   }
     
-  get urls => this.urls;
+  /**
+   * Returns the routes defined in the routes.dart file.
+   */
+  Map get urls => this.urls;
 
   bool _tryAndServe(SpokesRequest request){
     var path = _fixUri(request);
@@ -123,100 +135,106 @@ class SpokesRoutes{
   }
   
   _init(){
-    this.routes.addRoutes(this.urls);
-    routes.toString();
+    this._routes._addRoutes(this.urls);
+    _routes.toString();
   }
 }
   
-class RouteTrie {
-  RouteNode _root;
+class _RouteTrie {
+  Map <String, _RouteNode> _root;
   
-  RouteTrie(){
-    _root = new RouteNode();
+  _RouteTrie(){
+      _root = {};
   }
-  addRoutes(Map routes){
-    routes.forEach((SpokesUrl path,Map action){
-      _root._addRoute(path.uri.path,action,path.methods);
-      
+  _addRoutes(Map routes){
+    routes.forEach((var url,var action){
+      if(url is SpokesResource){
+        _addRoutes(url._buildResource(action));
+      }else{
+      url.methods.forEach((method){
+        if(_root[method] == null){
+          _root[method] = new _RouteNode();
+        }       
+        _RouteNode root = _root[method];      
+        root._addRoute(url.uri.path,action);
+      });
+      }
     });
   }
   
-  matchRoute(String route,SpokesRequest req){
-    return _root._match(route,req);
+  _matchRoute(String route,SpokesRequest req){
+    if(_root[req.method] == null)
+      return null;
+    
+    return _root[req.method]._match(route,req);
   }
 
 }
 
-class RouteNode {
+class _RouteNode {
   Map route;
-  RouteNode param;
+  _RouteNode param;
   String paramName;
-  Map<String,RouteNode> children;
-  List methods;
-  
-  RouteNode(){
-  
-  }
-  
+  Map<String,_RouteNode> children;
   
   _match(String route,SpokesRequest req){
     var val;
-    if(this.param != null){
-      var p = new RegExp(r"(\w+)").stringMatch(route);
-      if(p==null)
-        p = "";
-      
-      req.setUri(req.uri.path.replaceFirst("/"+p, ""));
+     if(this.param != null && (route != "" || route == "/")){
+       var p = new RegExp(r"(\w+)").stringMatch(route);
+       if(p==null)
+         p = "";
+       
+       req.setUri(req.uri.path.replaceFirst("/"+p, ""));
 
-      val = this.param._match(route.substring(p.length), req);
-      if(val != null){
-        req.params[paramName] = new RegExp(r"(\w+)").stringMatch(route);
-      }
-    }
-    
-    if(route != null && route.length > 0 && this.children != null && this.children[route[0]] != null && val == null){
-      return this.children[route[0]]._match(route.substring(1),req);
-    }else if(this.route != null && this.methods.contains(req.method) && route.length == 0){
-      return this.route;
-    }else{
-      return val;
-    }
+       val = this.param._match(route.substring(p.length), req);
+       if(val != null){
+         req.params[paramName] = new RegExp(r"(\w+)").stringMatch(route);
+       }
+     }
+     
+     if(route.length > 0 && this.children != null && this.children[route[0]] != null && val == null){
+       return this.children[route[0]]._match(route.substring(1),req);
+     }else if(this.route != null && (route.length == 0 || route == "/")){
+       return this.route;
+     }else{
+       return val;
+     }
 
     
   }
   
-  _addRoute(String path, Map action,List methods){    
+  _addRoute(String path, Map action){    
     if(path.length == 0){
         this.route = action;
-        this.methods = methods;
-      }
-
-      var token = path[0];
-      var remaining = path.substring(1);
-      var next;
-
-      if(token[0] == ':'){
-
-        var name = new RegExp(r"(\w+)").stringMatch(remaining);
-        remaining = remaining.substring(name.length);
-      
-        if(this.param == null){
-          this.param = new RouteNode();
-          this.paramName = name;
-        }
-        next = this.param;
       }else{
+        
+        var token = path[0];
+        var remaining = path.substring(1);
+        var next;
 
-        if(this.children == null)
-          this.children = new Map<String,RouteNode>();
+        if(token[0] == ':'){
+
+          var name = new RegExp(r"(\w+)").stringMatch(remaining);
+          remaining = remaining.substring(name.length);
+      
+          if(this.param == null){
+            this.param = new _RouteNode();
+            this.paramName = name;
+          }
+          next = this.param;
+        }else{
+
+          if(this.children == null)
+            this.children = new Map<String,_RouteNode>();
         
-        if(this.children[token] == null)
-          this.children[token] = new RouteNode();
+          if(this.children[token] == null)
+            this.children[token] = new _RouteNode();
         
-        next = this.children[token];
+          next = this.children[token];
+        }
+
+        next._addRoute(remaining, action);
       }
-
-      next._addRoute(remaining, action,methods);
   }
 }
 

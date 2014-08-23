@@ -1,15 +1,32 @@
+/**
+ * Class that defines urls to match to routes.
+ */
+
 part of spokes;
 
 class SpokesUrl {
 
-  List methods = new List();
-  Uri uri;
+  List _methods = new List();
+  Uri _uri;
 
-  SpokesUrl(methods,uriString){
-    uri = new Uri(path: uriString);
+  /**
+   * creates a new url with the method or methds provided, and a string representing the uri.
+   */
+  SpokesUrl(var methods,String uriString){
+    _uri = new Uri(path: uriString);
     if(methods is String){
-      this.methods.add(methods);
+      this._methods.add(methods);
     }else
-      this.methods.addAll(methods);
+      this._methods.addAll(methods);
   }
+  
+  /**
+   * Returns the methods defined for this url.
+   */
+  List get methods => _methods;
+  
+  /**
+   * Returns the uri this SpokesUrl represents.
+   */
+  Uri get uri => _uri;
 }
