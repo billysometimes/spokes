@@ -27,12 +27,6 @@ part 'src/spokesResource.dart';
    */
   List middleWares;
   
-  
-  /**
-   * Defines the root of the application
-   */  
-  String BASE_PATH;
-  
   /**
    *Options to be passed to the template library 
    */
@@ -73,7 +67,7 @@ part 'src/spokesResource.dart';
   /**
    * Database configuration map.  
    */
-  var db;
+  Map<String, Map> db;
   
   /**
    * Path where html templates are stored.  Default is /templates

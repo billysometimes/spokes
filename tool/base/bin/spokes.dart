@@ -8,8 +8,10 @@ import 'dart:async';
 import '../settings.dart';
 
 main(List p){
-  Spokes.port = int.parse(p[0]);
-  Spokes.host = p[1];
+  if(p.isNotEmpty){
+    Spokes.port = int.parse(p[0]);
+    Spokes.host = p[1];
+  }
 
   Directory scripts = new Directory(PUBLIC_PATH);
 

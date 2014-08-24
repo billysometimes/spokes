@@ -18,35 +18,70 @@ import 'package:lug/lug.dart';
 
 //import your apps
 
+
+//include routes
 part 'routes.dart';
 
-    String BASE_PATH = Platform.pathSeparator + Platform.script.pathSegments.sublist(0, Platform.script.pathSegments.length-2).join(Platform.pathSeparator);
+    /**
+     * The directory where static assets are stored, starting from the current directory
+     */
+    String PUBLIC_PATH = "web";
 
-    Map _templateOptions = {"templatePath": BASE_PATH+"/templates/",     //where templates are stored
-                            "debug"       : true,                          //debug stuff
-                            "cachePath"   : BASE_PATH+"/cache",            //relative path the cache uses
-                            };
-
-    String PUBLIC_PATH = BASE_PATH + "/web";
-
-    //middlewares
+    /**
+     * The directory where lug or mustache templates are stored, starting from the current
+     * directory.
+     */
+    String templatePath = "templates";
+    
+    
+    /**
+     * A list of all of the middleware classes that should be run
+     */
     List middleWares = [new SpokesLogger(spokesOptions["env"])];
+    
+    /**
+     * The template engine to use.  The default is lug, though mustache can be
+     * used as well.
+     */
+    var templateEngine = new Lug();
 
-    var templateEngine = new Lug(_templateOptions);
-
-    String templatePath = BASE_PATH+Platform.pathSeparator+"templates";
-
+    /**
+     * If the server is an Https server, provide the name of the certificate to use.
+     */
     String certificateName = null;
 
-    Routes router = new Routes();
+    /**
+     * The router to be used.
+     */
+    SpokesRoutes router = new Routes();
 
+    /**
+     * General spokes options.  Currently the available options are:
+     * 
+     * dart2js: 
+     *   - the path to your dart2js installation for automatic compilation of dart
+     * to javascript.
+     * 
+     * env: 
+     *   -acceptable values are 'development','test',and 'production'.
+     */
     Map spokesOptions = {
-                         "dart2js":'dart2js',"env":"development",
-                         "packages":Directory.current.path+Platform.pathSeparator+"packages"
+                         //Change to your dart2js executable location
+                         "dart2js":"/Applications/dart/dart-sdk/bin/dart2js",
+                         "env":"development",
                         };
 
-
-
-    //database config
-        var db = {"default":{"engine":RethinkORM,"name":"test"}};
+     /**
+     * database config.  Databases can be specified by model. For instance we could have:
+     * var db = {
+     *            //configure our user database to use
+     *            //a mysql database named UserDB
+     *            "User":{"engine":SomeMYSQLDB,"name":"UserDB","user":"myDBuser","password":"secretpass","host":"mydbhost","port":27000},
+     *     
+     *            //configure a default database to a rethinkdb database
+     *            //named AppName
+     *            "default":{"engine":RethinkORM,"name":"AppName"}
+     * }
+     */
+    Map db = {"default":{"engine":RethinkORM,"name":"test"}};
 **/

@@ -46,14 +46,15 @@ class SpokesController{
    */
   void render(SpokesRequest request, [Map params,String template]){
 
-    var path = request.uri.path;
+    String path = request.uri.path;
     if(template == null){
-      template = templatePath+Platform.pathSeparator+path;
+      template = [templatePath,path].join(Platform.pathSeparator);
     }else{
       if(new File(template).existsSync() == false){
-        template = templatePath+Platform.pathSeparator+template;
+        template = [templatePath,template].join(Platform.pathSeparator);
       }
     }
+    
     if(template.indexOf(".") < 0){
       template += ".html.lug";
     }
@@ -81,7 +82,7 @@ class SpokesController{
 
     if(!request.response.isDone) {
       new File(template).readAsLines().then((List<String> lines){
-        var imports = [];
+        List imports = [];
         ClassMirror cm = reflectClass(this.runtimeType);
         Map<Uri,LibraryMirror> lms = currentMirrorSystem().libraries;
         lms.forEach((Uri uri,LibraryMirror lm){
@@ -135,10 +136,9 @@ class SpokesController{
    * serves the file specified in the fileName parameter.
    */
   void serve(SpokesRequest request,String fileName){
-    var path =fileName;
 
-    request.renderFunction = new File(path).openRead().pipe;
-    _setContentType(request,path);
+    request.renderFunction = new File(fileName).openRead().pipe;
+    _setContentType(request,fileName);
     for(final e in middleWares){
       try{
       if(!request.response.isDone)
@@ -195,7 +195,7 @@ class SpokesController{
     }
   
   _setContentType(req,String path){
-    var extension = "html";
+    String extension = "html";
     if(path.lastIndexOf(".") > 0){
       extension= path.substring(path.lastIndexOf(".")+1);
     }

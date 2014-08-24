@@ -24,7 +24,7 @@ class SpokesRequest {
 
   
   /**
-   * The function used to render the request, generally a spokes controller method.
+   * The function used to render templates for a request.  The default is [Lug]'s render.
    */
   Function renderFunction;
 

@@ -37,7 +37,15 @@ class SpokesModel{
     */
    SpokesModel(){
      //select the database
-     var database = use == null ? "default" : use;
+     var database;
+     if(use != null){
+       database = use;
+     }else if(db[this.runtimeType.toString()] != null){
+       print("we hit this one!");
+       database = this.runtimeType.toString();
+     }else{
+       database = "default";
+     }
      
      //get instance of database
      ClassMirror dbInstance = reflectClass(db[database]["engine"]);
