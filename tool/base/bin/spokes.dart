@@ -33,7 +33,6 @@ main(List p){
   });
 
   Spokes.middleWares = middleWares;
-  Spokes.BASE_PATH = BASE_PATH;
   Spokes.PUBLIC_PATH = PUBLIC_PATH;
   Spokes.router = router;
   Spokes.templateEngine = templateEngine;

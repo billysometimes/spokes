@@ -12,7 +12,7 @@ class SpokesResource{
   /**
    * Creates a resource with the following rails routing conventions
    * 
-   * **NOTE:** the exception is the GET /controller/new route is mapped to controller => add
+   * **NOTE:** the exception is the GET /controller/new route is mapped to controller#add
    * because 'new' is a Dart reserved keyword.
    */
   SpokesResource({index:"index",add:"add",create:"create",show:"show",edit:"edit",update:"update",destroy:"destroy"}){
