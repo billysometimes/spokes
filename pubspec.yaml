@@ -3,6 +3,5 @@ version: 0.4.0
 author: Billy Welch <billywelch@gmail.com>
 description: A Django-inspired framework
 homepage: https://github.com/billysometimes/spokes
-documentation: https://github.com/billysometimes/spokes/wiki
 dev_dependencies:
   args: '>=0.10.0+1 <0.11.0'

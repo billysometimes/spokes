@@ -21,5 +21,5 @@ and try [building your first spokes application][firstapp]
 
 [django]: https://www.djangoproject.com/
 [qsguide]: https://github.com/billysometimes/spokes/wiki/Quick-Start
-[APIdoc]: http://www.dartdocs.org/documentation/spokes/0.3.0/
+[APIdoc]: http://www.dartdocs.org/documentation/spokes/0.4.1/
 [firstapp]: https://github.com/billysometimes/spokes/wiki/Your-first-app
