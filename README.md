@@ -5,7 +5,7 @@ A [Django][django] inspired dart framework.
 
 ## Installing
 
-See the [quickstart guide][qsguide].
+See the [quickstart guide][qsguide] for installing command line tools.
 
 ## API documentation
 
