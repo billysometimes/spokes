@@ -28,11 +28,6 @@ part 'src/spokesResource.dart';
   List middleWares;
   
   /**
-   *Options to be passed to the template library 
-   */
-  Map templateOptions;
-  
-  /**
    *The path to the public directory where static assets can be stored.
    */
   String PUBLIC_PATH;
