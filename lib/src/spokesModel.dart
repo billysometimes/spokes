@@ -195,11 +195,11 @@ class SpokesModel{
   }
 
   /**
-   * Finds a single object in the database
+   * Finds a single object in the database by the models primary key
    * 
    *      findItemTwo(SpokesRequest request){
    *        new Inventory().find(2).then((item){
-   *          print("The second item is ${item['name']}");
+   *          print("The item with id=2 is ${item['name']}");
    *        });
    *      }
    */

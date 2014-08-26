@@ -3,8 +3,10 @@ name: ##
 description: A sample spokes application
 dependencies:
   browser: any
-  lug: any
+  lug: 
+    git: git://github.com/billysometimes/lug.git
   rethinkdb_driver: any
-  spokes: any
+  spokes: 
+    git: git://github.com/billysometimes/spokes.git
   logging_handlers: any
 **/
