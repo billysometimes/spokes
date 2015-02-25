@@ -128,12 +128,22 @@ class SpokesModel{
     return _modelMap.toString();
   }
 
+  void forEach(Function f){
+    _modelMap.forEach(f);
+  }
+  
   /**
    * Returns a [Map] representation of this object.
    */
   Map call(){
     return _modelMap;
   }
+  
+  operator [](Object key) => _modelMap[key];
+
+
+  void operator []=(key, value){_modelMap[key] = value;}
+  
 
   get _conn =>  _db.connect().then((conn){return conn;});
 

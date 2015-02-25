@@ -6,7 +6,7 @@ part of spokes;
 
 class SpokesController{
 
-
+  
   /**Content Types**/
   static final _HTML = ContentType.HTML;
 
@@ -44,9 +44,12 @@ class SpokesController{
    * Renders a template.  If no template is specified, it is assumed that the
    * template matches the request path.
    */
-  void render(SpokesRequest request, [Map params,String template]){
+  void render(SpokesRequest request, [var params,String template]){
+    
 
+    
     String path = request.uri.path;
+    
     if(template == null){
       template = [templatePath,path].join(Platform.pathSeparator);
     }else{
@@ -56,7 +59,7 @@ class SpokesController{
     }
     
     if(template.indexOf(".") < 0){
-      template += ".html.lug";
+      template += templateEngine.ext;
     }
 
      request.renderFunction = templateEngine.render;
@@ -86,22 +89,15 @@ class SpokesController{
         ClassMirror cm = reflectClass(this.runtimeType);
         Map<Uri,LibraryMirror> lms = currentMirrorSystem().libraries;
         lms.forEach((Uri uri,LibraryMirror lm){
-
           if(lm.declarations.containsValue(cm)){
             imports.add(uri);
-          }
-
+          }         
         });
 
-
-        imports.forEach((imprt){
-          lines.insert(0, "<%import '$imprt'%>");
-        });
-        request.renderFunction(lines.join("\n"),path,params).then((msg){
-                 _setContentType(request,path);
-                 request.response.write(msg);
-                 request.response.close();
-              }).catchError((error){
+        _setContentType(request,path);
+        request.renderFunction(lines.join("\n"),path,params,imports).pipe(request.response).then((res){
+          request.response.close();
+   }).catchError((error){
                request.response.write(error);
 
                for(final e in middleWares){

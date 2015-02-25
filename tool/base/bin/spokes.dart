@@ -1,5 +1,5 @@
 /**
-import 'package:spokes/spokes.dart' as Spokes;
+import 'package:spokes/spokes.dart' as spokes;
 export 'package:spokes/spokes.dart'show SpokesModel, SpokesController, SpokesRoutes, SpokesUrl, SpokesRequest, SpokesResource;
 
 import 'dart:io';
@@ -9,8 +9,8 @@ import '../settings.dart';
 
 main(List p){
   if(p.isNotEmpty){
-    Spokes.port = int.parse(p[0]);
-    Spokes.host = p[1];
+    spokes.port = int.parse(p[0]);
+    spokes.host = p[1];
   }
 
   Directory scripts = new Directory(PUBLIC_PATH);
@@ -32,15 +32,15 @@ main(List p){
     }
   });
 
-  Spokes.middleWares = middleWares;
-  Spokes.PUBLIC_PATH = PUBLIC_PATH;
-  Spokes.router = router;
-  Spokes.templateEngine = templateEngine;
-  Spokes.db = db;
+  spokes.middleWares = middleWares;
+  spokes.PUBLIC_PATH = PUBLIC_PATH;
+  spokes.router = router;
+  spokes.templateEngine = templateEngine;
+  spokes.db = db;
   print("starting server");
-  Spokes.start(certificateName);
-  Spokes.spokesOptions = spokesOptions;
-  Spokes.templatePath = templatePath;
+  spokes.start(certificateName);
+  spokes.spokesOptions = spokesOptions;
+  spokes.templatePath = templatePath;
 
 
   Stream scriptStream = scripts.watch(recursive:true);
