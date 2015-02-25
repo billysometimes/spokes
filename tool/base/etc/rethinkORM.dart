@@ -51,7 +51,7 @@ class RethinkORM {
   }
 
   save(Map record){
-    _query = _query.insert(record,{"upsert":true,"return_vals":true});
+    _query = _query.insert(record,{"conflict":"update","return_changes":true});
   }
 
   _asc(var field){
