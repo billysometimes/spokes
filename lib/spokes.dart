@@ -27,80 +27,41 @@ class Spokes {
    */
   List _middleWares = [];
 
-  /**
-   *The path to the public directory where static assets can be stored.
-   */
-  //String PUBLIC_PATH;
-
-  /**
-   * The template engine to be used.
-   *
-   * Currently only lug is supported.
-   */
-  //var templateEngine;
-
-  /**
-   * Provides the routes
-   */
-  //SpokesRoutes router;
-
-  /**
-   * Provides general options to the framework
-   */
-  //Map spokesOptions;
-
-  /**
-   * The port the server will run on.  Default is 3000
-   */
-  //int port;
-
-  /**
-   * The host address.  Defaults to localhost.
-   */
-  //String host;
-
-  /**
-   * Database configuration map.
-   */
-  //Map<String, Map> db;
-
-  /**
-   * Path where html templates are stored.  Default is /templates
-   */
-  //String templatePath;
-
-  /**
-   * The application server.
-   */
-  //SpokesServer _server;
-
 
   /**
    * Starts the server.  A certificate may be passed if
    * the server uses a secure socket.
    */
   serve([String host,int port,String certificateName]) {
+    Future<HttpServer> server;
     if (certificateName == null) {
-      new SpokesServer(host, port)._start().then((HttpServer server){
-        print("server started on ${server.address.host}:${server.port}");
-        server.listen((HttpRequest req){
-          SpokesRequest request = new SpokesRequest(req);
-          runZoned((){
-            _execMiddleWare(request,0);
-          },
-          onError: (e, stackTrace){
-            _processExceptionMiddleware(request,e,0);
-            request.response.write('$e $stackTrace');
-            request.response.close();
-          });
-
-        });
-      });
+      server = new SpokesServer(host, port)._start();
     }
     else
-      return new SpokesServer(host, port)._startSecure(certificateName);
+      server = new SpokesServer(host, port)._startSecure(certificateName);
+    _listenTo(server);
   }
 
+  _listenTo(Future<HttpServer> server){
+    server.then((HttpServer server){
+      print("server started on ${server.address.host}:${server.port}");
+      server.listen((HttpRequest req){
+        SpokesRequest request = new SpokesRequest(req);
+        runZoned((){
+          _execMiddleWare(request,_middleWares.iterator);
+        },
+        onError: (e, stackTrace){
+          _processExceptionMiddleware(request,e,0);
+          request.response.write('$e $stackTrace');
+          request.response.close();
+        });
+      });
+    });
+  }
+
+  /**
+   * Adds middleware to the application.
+   */
   void add(_obj){
     if(_obj is List){
       _middleWares.addAll(_obj);
@@ -109,23 +70,44 @@ class Spokes {
     }
   }
 
-  _execMiddleWare(SpokesRequest request,int mw) {
+  _execMiddleWare(SpokesRequest request,Iterator itr) {
     if(!request.response.isDone){
-      if(mw < _middleWares.length){
+      if(itr.moveNext()){
         try{
-          var v = _middleWares[mw].processRequest(request);
+          var v = itr.current.processRequest(request);
           if(v is Future){
             v.then((req){
-              _execMiddleWare(req,++mw);
+              _execMiddleWare(req,itr);
             });
           }else{
-            _execMiddleWare(request,++mw);
+            _execMiddleWare(request,itr);
           }
         }on NoSuchMethodError{
-          _execMiddleWare(request,++mw);
+          _execMiddleWare(request,itr);
         }
       }else{
-        //TODO process middleware response in reverse.
+        _execResponseMiddleWare(request,_middleWares.reversed.iterator);
+      }
+    }
+  }
+
+  _execResponseMiddleWare(SpokesRequest request,Iterator itr){
+    if(!request.response.isDone) {
+      if (itr.moveNext()) {
+        try {
+          var v = itr.current.processResponse(request);
+          if (v is Future) {
+            v.then((req) {
+              _execResponseMiddleWare(req, itr);
+            });
+          } else {
+            _execResponseMiddleWare(request, itr);
+          }
+        } on NoSuchMethodError {
+          _execResponseMiddleWare(request, itr);
+        }
+      }else{
+        request.response.close();
       }
     }
   }

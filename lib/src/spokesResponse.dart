@@ -40,6 +40,8 @@ class SpokesResponse implements IOSink{
    */
   set statusCode(code) => _response.statusCode = code;
 
+  get statusCode => _response.statusCode;
+
   writeln([Object obj])=>_response.writeln(obj);
 
   writeCharCode(int charCode) => _response.writeCharCode(charCode);

@@ -4,92 +4,29 @@ class SpokesRouter{
   _RouteTrie _routes = new _RouteTrie();
 
   var _urls = new Map();
-  /**
-   * Attempts to fulfill a request.  
-   * 
-   * First it attempts to serve a file if one matching the request path exists.
-   * 
-   * If there is no static file, a route is matched.
-   * 
-   * If no routes match, a 404 is returned.
-   */
-  processRequest(SpokesRequest request){
-    var path = _fixUri(request);
-    new File(path).exists().then((bool exists){
-      if(exists){
-        //try to serve static file if it exists
-        new SpokesController().serve(request, path);
-      }else{
-        _routeUnservedRequest(request);
-      }
-    });
 
+  processRequest(SpokesRequest request){
+    Function match = _routes._matchRoute(request.uri.path, request);
+    if(match != null){
+      return match(request);
+    }else{
+      request.response.statusCode = HttpStatus.NOT_FOUND;
+      return request;
+    }
+  }
+
+  processResponse(SpokesRequest request){
+
+   if(request.response.statusCode == HttpStatus.NOT_FOUND){
+     request.response.write("ERROR: ${request.response.statusCode}");
+   }
+    return request;
   }
 
   addRoute(String method,String path, Function action){
     this._urls[new SpokesUrl(method,path)] = action;
     this._routes._addRoutes(this._urls);
 
-  }
-    
-  /**
-   * Returns the routes defined in the routes.dart file.
-   */
-  Map get urls => this._urls;
-  
-  _routeUnservedRequest(SpokesRequest request){  
-      //find a matching URL
-      Function match = _routes._matchRoute(request.uri.path, request);
-      if(match != null){
-        match(request);
-      }
-      /**
-      if(match != null){
-        Function ctrl;
-  
-        Object cls = match["controller"];
-
-        //create a new instance of the class that matches our controller
-        ClassMirror cm = reflectClass(cls);
-        var ncm = cm.newInstance(new Symbol(""),[]);
-
-        //check if it is a websocket upgrade request
-        if(WebSocketTransformer.isUpgradeRequest(request.request))
-          _handleWebsocket(request,ncm,match);
-        else{
-          //handle http request
-          if(cls != null)
-            ctrl = ncm.getField(new Symbol(match["action"])).reflectee;
-          
-          _runMiddlewares(request,ctrl,0);
-          
-          if(!request.response.isDone){
-            try{
-              ctrl(request);
-            }catch(error){
-              request.response.write(error);
-              request.response.close();
-            }
-          }
-        }
-      }else{
-        //File does not exist and no route exists
-        new SpokesController().serve(request,"web/404.html");
-      }**/
-  }
-
-  String _fixUri(SpokesRequest request){
-    //List builtPath = new List.from(request.request.uri.pathSegments);
-
-    //if(builtPath.isNotEmpty && builtPath.first != "packages")
-    //builtPath.insert(0, PUBLIC_PATH);
-
-
-    //if(builtPath.isNotEmpty && builtPath.last.indexOf(".") == -1)
-    //  builtPath[builtPath.length-1] +=".html";
-    
-    //return builtPath.isNotEmpty ? builtPath.join(Platform.pathSeparator) : "";
-    return request.request.uri.toString();
   }
 
   void _handleWebsocket(request,ncm,match){
@@ -125,33 +62,7 @@ class SpokesRouter{
     });
     
   }
-  
-  void _runMiddlewares(request,ctrl,int mw){
-    if(!request.response.isDone){
-      if(mw < middleWares.length){
-        try{
-          var v = middleWares[mw].processController(request,ctrl);
-          if(v is Future){
-            v.then((req){
-              _runMiddlewares(req,ctrl,++mw);
-            });
-          }else{
-            _runMiddlewares(request,ctrl,++mw);
-          }
-        }on NoSuchMethodError{
-          _runMiddlewares(request,ctrl,++mw);
-        }catch(error){
-          request.response.write(error);
-          request.response.close();
-        }
-      }
-    }
-  }
-  
-  _init(){
-    this._routes._addRoutes(this._urls);
-    _routes.toString();
-  }
+
 }
   
 class _RouteTrie {

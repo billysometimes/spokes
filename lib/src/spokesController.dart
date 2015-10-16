@@ -90,53 +90,8 @@ class SpokesController{
     }
   }
   
-  _processExceptionMiddleware(request,error,mw){
-    if(!request.response.isDone){
-      if(mw < middleWares.length){
-        try{
-          var v = middleWares[mw].processException(request,error);
-          if(v is Future){
-            v.then((req){
-              _processExceptionMiddleware(req,error,++mw);
-            });
-          }else{
-            _processExceptionMiddleware(request,error,++mw);
-          }
-        }on NoSuchMethodError{
-          _processExceptionMiddleware(request,error,++mw);
-        }catch(error){
-          request.response.write(error);
-          request.response.close();
-        }
-      }else{
-          request.response.close();
-      }
-    }
-  }
-  
- /** _processResponseMiddleware(request,mw,onDone){
-    if(!request.response.isDone){
-      if(mw < middleWares.length){
-        try{
-          var v = middleWares[mw].processResponse(request);
-          if(v is Future){
-            v.then((req){
-              _processResponseMiddleware(req,++mw,onDone);
-            });
-          }else{
-            _processResponseMiddleware(request,++mw,onDone);
-          }
-        }on NoSuchMethodError{
-          _processResponseMiddleware(request,++mw,onDone);
-        }catch(error){
-          request.response.write(error);
-          request.response.close();
-        }
-      }else{
-          onDone();
-      }
-    }
-  }**/
+
+
   
   
   _processImports(request,template,path,params){
@@ -179,9 +134,6 @@ class SpokesController{
       });
     };
     
-    //_processResponseMiddleware(request,0,done);
-
-    
   }
 
   /**
@@ -196,8 +148,7 @@ class SpokesController{
   /**
    * Sends a JSON response to the client.
    */
-  void sendJSON(SpokesRequest request,var jsonData){
-    print("this is def this");
+  SpokesRequest sendJSON(SpokesRequest request,var jsonData){
     if(jsonData is SpokesModel){
       jsonData = jsonData();
     }
@@ -205,10 +156,15 @@ class SpokesController{
 
     request.response..headers..write(JSON.encode(jsonData));
 
-    request.response.close();
-    //_processResponseMiddleware(request,0,()=>request.response.close());
-
+    return request;
     }
+
+  /**
+   * Sends an error
+   */
+  SpokesRequest sendERROR(SpokesRequest request){
+
+  }
   
   _setContentType(req,String path){
     String extension = "html";

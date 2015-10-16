@@ -41,20 +41,16 @@ class SpokesLogger {
     }
   }
 
-  processController(request,Function controller){
-    return request;
-  }
-
-  processTemplateResponse(request){
-    return request;
-  }
-
   processResponse(request){
-    return request;
+    Stream s = new Stream.fromIterable([1,2,3,4,5]);
+    Completer c = new Completer();
+    s.listen((d){
+
+    },onDone:()=>c.complete(request));
+    return c.future;
   }
 
   processException(request, error){
-    print('why aint this happening');
     _logError(reques,error);
     return request;
   }
@@ -70,7 +66,6 @@ class SpokesLogger {
   }
 
   _logError(req,err){
-    print('what about this');
     var msg = "ERROR: ";
     _auditLogger.severe(msg,err);
   }
