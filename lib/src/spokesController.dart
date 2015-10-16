@@ -46,8 +46,6 @@ class SpokesController{
    */
   void render(SpokesRequest request, [var params,String template]){
     
-
-    
     String path = request.uri.path;
     
     if(template == null){
@@ -63,27 +61,85 @@ class SpokesController{
     }
 
      request.renderFunction = templateEngine.render;
-     for(final e in middleWares){
-       try{
-         if(!request.response.isDone)
-           e.processTemplateResponse(request,params);
-       }on NoSuchMethodError{
-
-       }catch(error){
-         print(error);
-       }
-
-       try{
-         if(!request.response.isDone)
-           e.processResponse(request);
-         }on NoSuchMethodError{
-
-         }catch(error){
-           print(error);
-         }
-     }
-
-    if(!request.response.isDone) {
+     
+     _processTemplate(request,params,0,template,path);
+  }
+  
+  _processTemplate(request,params,mw,template,path){
+   
+    if(!request.response.isDone){
+      if(mw < middleWares.length){
+        try{
+          var v = middleWares[mw].processTemplateResponse(request,params);
+          if(v is Future){
+            v.then((req){
+              _processTemplate(req,params,++mw,template,path);
+            });
+          }else{
+            _processTemplate(request,params,++mw,template,path);
+          }
+        }on NoSuchMethodError{
+          _processTemplate(request,params,++mw,template,path);
+        }catch(error){
+          request.response.write(error);
+          request.response.close();
+        }
+      }else{
+        _processImports(request,template,path,params);
+      }
+    }
+  }
+  
+  _processExceptionMiddleware(request,error,mw){
+    if(!request.response.isDone){
+      if(mw < middleWares.length){
+        try{
+          var v = middleWares[mw].processException(request,error);
+          if(v is Future){
+            v.then((req){
+              _processExceptionMiddleware(req,error,++mw);
+            });
+          }else{
+            _processExceptionMiddleware(request,error,++mw);
+          }
+        }on NoSuchMethodError{
+          _processExceptionMiddleware(request,error,++mw);
+        }catch(error){
+          request.response.write(error);
+          request.response.close();
+        }
+      }else{
+          request.response.close();
+      }
+    }
+  }
+  
+ /** _processResponseMiddleware(request,mw,onDone){
+    if(!request.response.isDone){
+      if(mw < middleWares.length){
+        try{
+          var v = middleWares[mw].processResponse(request);
+          if(v is Future){
+            v.then((req){
+              _processResponseMiddleware(req,++mw,onDone);
+            });
+          }else{
+            _processResponseMiddleware(request,++mw,onDone);
+          }
+        }on NoSuchMethodError{
+          _processResponseMiddleware(request,++mw,onDone);
+        }catch(error){
+          request.response.write(error);
+          request.response.close();
+        }
+      }else{
+          onDone();
+      }
+    }
+  }**/
+  
+  
+  _processImports(request,template,path,params){
       new File(template).readAsLines().then((List<String> lines){
         List imports = [];
         ClassMirror cm = reflectClass(this.runtimeType);
@@ -100,58 +156,32 @@ class SpokesController{
    }).catchError((error){
                request.response.write(error);
 
-               for(final e in middleWares){
-                 try{
-                 if(!request.response.isDone)
-                   e.processException(request,error);
-                 }on NoSuchMethodError{
+               _processExceptionMiddleware(request,error,0);
 
-                 }catch(error){
-                   print(error);
-                 }
-                 try{
-                 if(!request.response.isDone)
-                   e.processResponse(request);
-                 }on NoSuchMethodError{
 
-                 }catch(error){
-                   print(error);
-                 }
-               }
-               if(!request.response.isDone){
-                 request.response.close();
-                 }
               });
       });
-
-
-    }
   }
-
+  
   /**
    * serves the file specified in the fileName parameter.
    */
   void serve(SpokesRequest request,String fileName){
-
     request.renderFunction = new File(fileName).openRead().pipe;
     _setContentType(request,fileName);
-    for(final e in middleWares){
-      try{
-      if(!request.response.isDone)
-        e.processResponse(request);
-      }on NoSuchMethodError{
-
-      }catch(error){
-       print(error);
-      }
-    }
-
-    request.renderFunction(request.response).then((d){
-
+    
+    
+    Function done = (){
+      request.renderFunction(request.response).then((d){
         if(!request.response.isDone){
           request.response.close();
         }
-    });
+      });
+    };
+    
+    //_processResponseMiddleware(request,0,done);
+
+    
   }
 
   /**
@@ -167,6 +197,7 @@ class SpokesController{
    * Sends a JSON response to the client.
    */
   void sendJSON(SpokesRequest request,var jsonData){
+    print("this is def this");
     if(jsonData is SpokesModel){
       jsonData = jsonData();
     }
@@ -174,20 +205,9 @@ class SpokesController{
 
     request.response..headers..write(JSON.encode(jsonData));
 
-    for(final e in middleWares){
-      try{
-        if(!request.response.isDone)
-          e.processResponse(request);
-      }on NoSuchMethodError{
+    request.response.close();
+    //_processResponseMiddleware(request,0,()=>request.response.close());
 
-      }catch(error){
-        print(error);
-      }
-    }
-
-    if(!request.response.isDone){
-        request.response.close();
-      }
     }
   
   _setContentType(req,String path){

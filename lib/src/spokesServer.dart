@@ -15,43 +15,20 @@ class SpokesServer{
     }
   }
 
-  _start(){
-    HttpServer.bind(_host, _port).then((HttpServer server){
-        print("server started on $_host:$_port");
-        server.listen((HttpRequest request){
-          runZoned((){
-          _execMiddleWare(new SpokesRequest(request));
-          },
-          onError: (e, stackTrace){request.response.write('$e $stackTrace');request.response.close();});
-
-        });
+  Future<HttpServer>_start(){
+    return HttpServer.bind(_host, _port).then((HttpServer server){
+      return server;
     });
   }
 
   _startSecure(certificateName){
     HttpServer.bindSecure(_host, _port, certificateName: certificateName).then((HttpServer server){
-      server.listen((HttpRequest request)=>_execMiddleWare(new SpokesRequest(request)));
+      server.listen((HttpRequest request)=>_execMiddleWare(new SpokesRequest(request),0));
     });
   }
 
 
-  _execMiddleWare(SpokesRequest request) {
 
-    for(final e in middleWares){
-      if(!request.response.isDone){
-        try{
-          e.processRequest(request);
-        }on NoSuchMethodError{
-          //do nothing
-        }catch(error){
-          print(error);
-        }
-      }
-    }
-
-    if(!request.response.isDone)
-      router.manage(request);
-  }
 
 }
 

@@ -23,6 +23,7 @@ class SpokesModel{
   final Map fields = {};
   Type _queryType;
   var _db;
+  var _query;
   
   /**
    * Can be used to set a non-default database.
@@ -41,18 +42,21 @@ class SpokesModel{
      if(use != null){
        database = use;
      }else if(db[this.runtimeType.toString()] != null){
-       print("we hit this one!");
        database = this.runtimeType.toString();
      }else{
        database = "default";
      }
      
      //get instance of database
-     ClassMirror dbInstance = reflectClass(db[database]["engine"]);
-      _db = dbInstance.newInstance(new Symbol(""), [db[database]]).reflectee;
-      _db.set(reflectClass(this.runtimeType).reflectedType.toString()+"s");
-     _queryType = this.runtimeType;
+     if(db[database]["instance"] == null){
+       ClassMirror dbInstance = reflectClass(db[database]["engine"]);
+        db[database]["instance"] = dbInstance.newInstance(new Symbol(""), [db[database]]).reflectee;
+       }
 
+      _db = db[database]["instance"];
+      _query = _db.set(reflectClass(this.runtimeType).reflectedType.toString()+"s");
+     _queryType = this.runtimeType;
+  
      //populate the model map
      this.fields.forEach((key,val){
        if(val is Map){
@@ -144,9 +148,6 @@ class SpokesModel{
 
   void operator []=(key, value){_modelMap[key] = value;}
   
-
-  get _conn =>  _db.connect().then((conn){return conn;});
-
   /**
    * Sets the attributes of this model from a map
    * 
@@ -159,10 +160,17 @@ class SpokesModel{
       });
   }
 
-  SpokesModel save(){
+  Future save(){
+    Completer c = new Completer();
     //TODO beforesave callbacks
-    _db.save(this());
-    return this;
+    
+    _db.save(this(),_query).then((ok){
+        from(ok);
+        c.complete(this);
+    }).catchError((err){
+      c.completeError(err);
+    });
+    return c.future;
   }
 
   /**
@@ -175,9 +183,17 @@ class SpokesModel{
    *        });
    *      }
    */
-  SpokesModel destroy(){
-    _db.destroy();
-    return this;
+  Future destroy(){
+    Completer c = new Completer();
+    //TODO beforesave callbacks
+    
+    _db.destroy(_query).then((ok){
+        from(ok);
+        c.complete(this);
+    }).catchError((err){
+      c.completeError(err);
+    });
+    return c.future;
   }
 
   /**
@@ -185,6 +201,7 @@ class SpokesModel{
    *       posts.all().pluck('title');
    */
   SpokesModel pluck(var field){
+    _query = _db.pluck(field,_query);
     _queryType = String;
     return this;
   }
@@ -199,7 +216,7 @@ class SpokesModel{
    *     }
    */
   SpokesModel all(){
-    _db.all();
+    _query = _db.all(_query);
     _queryType = this.runtimeType;
     return this;
   }
@@ -214,7 +231,7 @@ class SpokesModel{
    *      }
    */
   SpokesModel find(var id){
-    _db.find(id);
+    _query = _db.find(id,_query);
 
     _queryType = this.runtimeType;
     return this;
@@ -234,7 +251,7 @@ class SpokesModel{
    *      }
    */
   SpokesModel findBy(Map attrs){
-    _db.findBy(attrs);
+    _query = _db.findBy(attrs,_query);
     _queryType = this.runtimeType;
     return this;
   }
@@ -249,7 +266,7 @@ class SpokesModel{
    *      }
    */
   SpokesModel findFirstBy(Map attrs){
-    _db.findFirstBy(attrs);
+    _query = _db.findFirstBy(attrs,_query);
     _queryType = this.runtimeType;
 
     return this;
@@ -262,7 +279,7 @@ class SpokesModel{
    *     new User().all().orderBy("age","desc");
    */
   SpokesModel orderBy(var field,[var dir = "asc"]){
-    _db.orderBy(field,dir);
+    _query = _db.orderBy(field,dir,_query);
     return this;
   }
 
@@ -272,7 +289,7 @@ class SpokesModel{
    *      new User().all().limit(10);
    */
   SpokesModel limit(int lim){
-    _db.limit(lim);
+    _query = _db.limit(lim,_query);
     return this;
   }
 
@@ -291,8 +308,7 @@ class SpokesModel{
    *      });
    */
   void then(Function callback){
-    _conn.then((connection){
-      _db.run(connection).then((response){
+      _db.run(_query).then((response){
         var res = [];
         InstanceMirror im = reflect(this);
          ClassMirror cm = im.type;
@@ -350,7 +366,7 @@ class SpokesModel{
         print("${e.runtimeType}: $e");
         callback(null);
       });
-  });
+
   }
 
 }
