@@ -124,6 +124,8 @@ class Spokes {
         }on NoSuchMethodError{
           _execMiddleWare(request,++mw);
         }
+      }else{
+        //TODO process middleware response in reverse.
       }
     }
   }
